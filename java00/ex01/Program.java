@@ -4,13 +4,13 @@ public class Program {
     public static void main(String[] args) {
         try (Scanner sc = new Scanner(System.in)) {
             if (!sc.hasNextInt()) {
-                System.out.println("IllegalArgument");
+                System.err.println("IllegalArgument");
                 System.exit(-1);
             }
 
             int num = sc.nextInt();
             if (num <= 1) {
-                System.out.println("IllegalArgument");
+                System.err.println("IllegalArgument");
                 System.exit(-1);
             }
 
