@@ -12,10 +12,6 @@ This repository showcases my progress through the Java programming modules as pa
 
 Each module focuses on different aspects of Java programming, building upon previous knowledge and introducing new concepts progressively.
 
-## About 42
-
-The 42 Network is a network of peer-to-peer learning institutions that teach software engineering through hands-on projects and collaborative learning. For more information, visit [42.fr](https://www.42.fr/).
-
 ## Author
 
 AmineMaila
