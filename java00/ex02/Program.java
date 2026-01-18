@@ -10,6 +10,7 @@ public class Program {
         }
         return res;
     }
+
     private static boolean isPrime(long num) {
         if (num <= 1 || num % 2 == 0) {
             return false;
@@ -20,13 +21,11 @@ public class Program {
         }
 
         int div = 3;
-        int steps = 1;
         long limit = num / 2;
         while (div < limit) {
             if (num % div == 0) {
                 return false;
             }
-            steps++;
             div+=2;
         }
         return true;

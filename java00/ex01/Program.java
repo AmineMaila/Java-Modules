@@ -16,12 +16,12 @@ public class Program {
 
             if (num == 2) {
                 System.out.println("true 1");
-                System.exit(0);
+                return;
             }
 
             if (num % 2 == 0) {
                 System.out.println("false 1");
-                System.exit(0);
+                return;
             }
 
             int div = 3;
@@ -30,7 +30,7 @@ public class Program {
             while (div < limit) {
                 if (num % div == 0) {
                     System.out.println("false " + steps);
-                    System.exit(0);
+                    return;
                 }
                 steps++;
                 div+=2;

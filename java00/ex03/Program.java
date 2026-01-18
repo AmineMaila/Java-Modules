@@ -6,7 +6,7 @@ public class Program {
         int weekCount = 0;
         long mult = 1;
         try (Scanner sc = new Scanner(System.in)) {
-            while (true) {
+            while (sc.hasNextLine()) {
                 if (weekCount > 18) {
                     System.err.println("IllegalArgument");
                     System.exit(-1);
@@ -24,6 +24,10 @@ public class Program {
 
                 int min = 9;
                 for (int j = 0; j < 5; j++) {
+                    if (!sc.hasNextInt()) {
+                        System.err.println("IllegalArgument");
+                        System.exit(-1);
+                    }
                     int grade = sc.nextInt();
                     if (grade < 1 || grade > 9) {
                         System.err.println("IllegalArgument");

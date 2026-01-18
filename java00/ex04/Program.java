@@ -54,7 +54,6 @@ public class Program {
             int[] frequency = freqMap(input);
             char[] topTen = maxTen(frequency);
             printGraph(frequency, topTen);
-
         }
     }
 }
