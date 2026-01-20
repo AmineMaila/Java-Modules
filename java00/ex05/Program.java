@@ -5,7 +5,6 @@ public class Program {
     private static final int DAYS_IN_MONTH = 30;
     private static final int DAYS_IN_WEEK = 7;
     private static final int HOURS_IN_DAY = 6;
-    private static final int START_DAY_INDEX = 1;
     private static final String[] WEEK = new String[]{"MO", "TU", "WE", "TH", "FR", "SA", "SU"};
     private static final String[] students = new String[INPUT_LIMIT];
     private static int studentSize = 0;
@@ -14,12 +13,11 @@ public class Program {
     // the first array represent the students and the second is month days and third is hour of attendence
     private static final int[][][] attendence = new int[INPUT_LIMIT][DAYS_IN_MONTH][HOURS_IN_DAY];
 
-
-
-    public static boolean hasClassOnDay(boolean[][] schedule, int dayOfMonth) {
-        for (int hour = 0; hour < schedule[(dayOfMonth - 1 + START_DAY_INDEX) % WEEK.length].length; hour++) {
-            if (schedule[(dayOfMonth - 1 + START_DAY_INDEX) % WEEK.length][hour])
+    public static boolean isClassOnDay(boolean[][] schedule, int dayOfMonth) {
+        for (int hour = 0; hour < schedule[dayOfMonth % WEEK.length].length; hour++) {
+            if (schedule[dayOfMonth % WEEK.length][hour]) {
                 return true;
+            }
         }
         return false;
     }
@@ -34,16 +32,16 @@ public class Program {
         return -1;
     }
 
-    public static boolean matches(char[] s1, char[] s2, int s2start, int s2end) {
+    public static int matches(char[] s1, char[] s2, int s2start, int s2end) {
         if (s1.length != s2end - s2start) {
-            return false;
+            return -1;
         }
         for (int i = 0; i < s1.length; i++) {
             if (s1[i] != s2[s2start + i]) {
-                return false;
+                return -1;
             }
         }
-        return true;
+        return 1;
     }
 
     public static void printHeader() {
@@ -63,14 +61,18 @@ public class Program {
     public static void parseStudent(Scanner reader) {
         while (reader.hasNextLine()) {
             String student = reader.nextLine();
-            if (student.equals(".")) return;
+            if (student.equals(".")) {
+                return;
+            }
             students[studentSize++] = student;
         }
     }
     public static void parseSchedule(Scanner reader) {
         while (reader.hasNextLine()) {
             String clazz = reader.nextLine();
-            if (clazz.equals(".")) return;
+            if (clazz.equals("."))  {
+                return;
+            }
             char[] chars = clazz.toCharArray();
             int hour = chars[0] - '0';
             int day = parseDay(new char[]{chars[2], chars[3]});
@@ -82,30 +84,33 @@ public class Program {
     public static void parseAttendence(Scanner reader) {
         while (reader.hasNextLine()) {
             String input = reader.nextLine();
-            if (input.equals(".")) return;
+            if (input.equals(".")) {
+                return;
+            }
 
-            char[] c = input.toCharArray();
+            char[] inputCharArr = input.toCharArray();
             int idx = 0;
-            while(c[idx] != ' ') idx++;
+            while(inputCharArr[idx] != ' ') {
+                idx++;
+            }
 
             int studentIndex = -1;
             for (int i = 0; i < studentSize; i++) {
-                if (matches(students[i].toCharArray(), c, 0, idx)) {
+                if (matches(students[i].toCharArray(), inputCharArr, 0, idx) == 1) {
                     studentIndex = i;
                 }
             }
             idx++;
 
-            int hour = c[idx] - '0';
+            int hour = inputCharArr[idx] - '0';
             idx+=2;
             int monthDay = 0;
-            while (c[idx] != ' ') {
-                monthDay = monthDay * 10 + (c[idx] - '0');
+            while (inputCharArr[idx] != ' ') {
+                monthDay = monthDay * 10 + (inputCharArr[idx] - '0');
                 idx++;
             }
             idx++;
-            int attended = matches(new char[]{'H', 'E', 'R', 'E'}, c, idx, c.length) ? 1 : -1;
-            attendence[studentIndex][monthDay - 1][hour] = attended;
+            attendence[studentIndex][monthDay - 1][hour] = matches(new char[]{'H', 'E', 'R', 'E'}, inputCharArr, idx, inputCharArr.length);
         }
     }
 
@@ -113,11 +118,13 @@ public class Program {
         for (int studentIndex = 0; studentIndex < studentSize; studentIndex++) {
             System.out.printf("%10s", students[studentIndex]);
             for (int dayOfMonth = 1; dayOfMonth <= DAYS_IN_MONTH; dayOfMonth++) {
-                if (!hasClassOnDay(schedule, dayOfMonth))
+                if (!isClassOnDay(schedule, dayOfMonth)) {
                     continue;
+                }
                 for (int hour = 0; hour < HOURS_IN_DAY; hour++) {
-                    if (!schedule[dayOfMonth % WEEK.length][hour])
+                    if (!schedule[dayOfMonth % WEEK.length][hour]) {
                         continue;
+                    }
                     if (attendence[studentIndex][dayOfMonth - 1][hour] != 0) {
                         System.out.printf("%10d|", attendence[studentIndex][dayOfMonth - 1][hour]);
                     } else {
