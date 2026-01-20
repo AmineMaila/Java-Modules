@@ -34,27 +34,27 @@ public class Program {
     public static void main(String[] args) {
         long queries = 0;
 
-        try (Scanner sc = new Scanner(System.in)) {
-            while (true) {
-                if (!sc.hasNextLong()) {
-                    System.err.println("IllegalArgument");
-                    System.exit(-1);
-                }
-                long query = sc.nextLong();
-                if (query <= 1) {
-                    System.err.println("IllegalArgument");
-                    System.exit(-1);
-                }
-                if (query == 42) {
-                    break;
-                }
+        Scanner sc = new Scanner(System.in);
+        while (true) {
+            if (!sc.hasNextLong()) {
+                System.err.println("IllegalArgument");
+                System.exit(-1);
+            }
+            long query = sc.nextLong();
+            if (query <= 1) {
+                System.err.println("IllegalArgument");
+                System.exit(-1);
+            }
+            if (query == 42) {
+                break;
+            }
 
-                if (isPrime(sumOfDigit(query))) {
-                    queries++;
-                }
+            if (isPrime(sumOfDigit(query))) {
+                queries++;
             }
         }
 
         System.out.println("Count of coffee-request : " + queries);
+        sc.close();
     }
 }

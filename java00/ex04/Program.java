@@ -48,12 +48,18 @@ public class Program {
     }
 
     public static void main(String[] args) {
-        try (Scanner sc = new Scanner(System.in)) {
-            String input = sc.nextLine();
-
-            int[] frequency = freqMap(input);
-            char[] topTen = maxTen(frequency);
-            printGraph(frequency, topTen);
+        Scanner sc = new Scanner(System.in);
+        if (!sc.hasNextLine()) {
+            sc.close();
+            return;
         }
+
+        String input = sc.nextLine();
+
+        int[] frequency = freqMap(input);
+        char[] topTen = maxTen(frequency);
+        printGraph(frequency, topTen);
+
+        sc.close();
     }
 }
