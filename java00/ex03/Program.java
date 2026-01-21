@@ -4,7 +4,6 @@ public class Program {
     public static void main(String[] args) {
         long storage = 0;
         int weekCount = 0;
-        long mult = 1;
         Scanner sc = new Scanner(System.in);
         while (sc.hasNextLine()) {
             if (weekCount > 18) {
@@ -42,18 +41,26 @@ public class Program {
                 }
             }
             sc.nextLine();
-            storage += (long)(mult * min);
+            storage = storage * 10 + min;
             weekCount++;
-            mult *= 10;
         }
-        for (int i = 0; i < weekCount; i++) {
-            System.out.print("Week " + (i + 1) + " ");
-            int lowest = (int)(storage % 10);
+
+        long divisor = 1;
+        for (int i = 1; i < weekCount; i++) {
+            divisor *= 10;
+        }
+
+        for (int i = weekCount - 1; i >= 0; i--) {
+            System.out.print("Week " + (weekCount - i) + " ");
+
+            int lowest = (int)(storage / divisor);
+            storage %= divisor;
+            divisor /= 10;
+
             for (int j = 0; j < lowest; j++) {
                 System.out.print('=');
             }
             System.out.println(">");
-            storage /= 10;
         }
         sc.close();
     }

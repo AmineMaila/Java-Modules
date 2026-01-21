@@ -31,6 +31,7 @@ public class Program {
         int div = 3;
         int steps = 1;
         int limit = num / 2;
+    
         while (div < limit) {
             if (num % div == 0) {
                 System.out.println("false " + steps);
