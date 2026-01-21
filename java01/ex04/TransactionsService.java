@@ -1,8 +1,7 @@
 import java.util.UUID;
 
 public class TransactionsService {
-    private final UsersList users = new UsersArrayList();
-    private final TransactionsList unpairedTransactions = new TransactionsLinkedList(); 
+    private final UsersList users = new UsersArrayList(); 
 
     public TransactionsService() {
 
@@ -42,8 +41,8 @@ public class TransactionsService {
         UUID transactionId = UUID.randomUUID();
         Transaction debit = new Transaction(transactionId, sender, recipient, Transaction.TransferCategory.DEBIT, -amount);
         Transaction credit = new Transaction(transactionId, sender, recipient, Transaction.TransferCategory.CREDIT, amount);
-        sender.getTransactionsList().add(credit);
-        recipient.getTransactionsList().add(debit);
+        sender.getTransactionsList().add(debit);
+        recipient.getTransactionsList().add(credit);
     }
 
     public Transaction[] checkValidity() {
