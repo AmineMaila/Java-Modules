@@ -2,8 +2,8 @@
 import java.util.UUID;
 
 enum TransferCategory {
-    INCOMING,
-    OUTGOING
+    CREDIT,
+    DEBIT
 }
 
 public class Transaction {
@@ -11,19 +11,14 @@ public class Transaction {
     private final User recipient;
     private final User sender;
     private final TransferCategory transferType;
-    private final double amount;
+    private double amount;
     
     public Transaction(User recipient, User sender, TransferCategory transferType, double amount) {
         this.recipient = recipient;
         this.sender = sender;
         this.transferType = transferType;
         
-        if ((transferType == TransferCategory.INCOMING && amount < 0)
-            || (transferType == TransferCategory.OUTGOING && amount > 0)) {
-            System.err.println("Error: transaction ammount doesn't match transaction type");
-            System.exit(-1);
-        }
-        this.amount = amount;
+        setAmount(amount);
     }
 
     public UUID getId() {
@@ -44,5 +39,22 @@ public class Transaction {
 
     public double getAmount() {
         return this.amount;
+    }
+
+    public double setAmount(double amount) {
+        if ((transferType == TransferCategory.CREDIT && amount < 0)
+            || (transferType == TransferCategory.DEBIT && amount > 0)) {
+            System.err.println("Error: transaction ammount doesn't match transaction type");
+            this.amount = 0;
+            return -1;
+        }
+        this.amount = amount;
+        return this.amount;
+    }
+
+    @Override
+    public String toString() {
+        return "Transaction[ID: %s, sender: %s, recipient: %s, type: %s, amount: %f]"
+            .formatted(id, sender, recipient, transferType, amount);
     }
 }

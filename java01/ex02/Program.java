@@ -3,9 +3,9 @@ public class Program {
     public static void main(String[] args) {
         UsersArrayList users = new UsersArrayList();
 
-        users.add(new User("Mohamed"));
-        users.add(new User("Amine"));
-        users.add(new User("Maila"));
+        users.add(new User("Mohamed", 0));
+        users.add(new User("Amine", 15.0));
+        users.add(new User("Maila", 30.5));
 
         System.out.println(users.get(0));
 

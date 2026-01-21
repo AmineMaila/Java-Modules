@@ -1,20 +1,26 @@
 
 public class User {
-	private final int id;
-	private final String name;
-	private double balance = 0.0;
+	private final int identifier;
+	private String name;
+	private double balance;
 
-	public User(String name, int id) {
+	public User(int identifier, String name, double balance) {
 		this.name = name;
-		this.id = id;
+		this.identifier = identifier;
+		setBalance(balance);
 	}
 
 	public double setBalance(double balance) {
 		if (balance < 0) {
+			System.out.println("User balance cannot be negative");
 			return -1;
 		}
 		this.balance = balance;
 		return this.balance;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public double getBalance() {
@@ -26,6 +32,11 @@ public class User {
 	}
 
 	public int getId() {
-		return id;
+		return identifier;
 	}
+
+	@Override
+    public String toString() {
+        return "User[ID: %d, Name: %s, Balance: %f]".formatted(identifier, name, balance);
+    }
 }
