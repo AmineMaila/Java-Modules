@@ -1,21 +1,17 @@
 
 public class UsersArrayList implements UsersList{
     private User[] users = new User[10];
-    private int capacity = 10;
     private int size = 0;
-    
-    public UsersArrayList() {}
 
     @Override
     public void add(User user) {
-        if (size == capacity) {
-            int newCapacity = capacity *= 1.5;
+        if (size == users.length) {
+            int newCapacity = (int)(users.length * 1.5);
             User[] larger = new User[newCapacity];
             for (int i = 0; i < size; i++) {
                 larger[i] = users[i];
             }
             users = larger;
-            capacity = newCapacity;
         }
 
         users[size++] = user;
@@ -28,6 +24,9 @@ public class UsersArrayList implements UsersList{
 
     @Override
     public User get(int index) {
+        if (index < 0 || index >= size) {
+            throw new UserNotFoundException();
+        }
         return users[index];
     }
 

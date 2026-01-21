@@ -7,13 +7,16 @@ public class Program {
         users.add(new User("Amine", 15.0));
         users.add(new User("Maila", 30.5));
 
-        System.out.println(users.get(0));
+        for (int i = 0; i < users.size(); i++) {
+            System.out.println(users.get(i));
+        }
 
-        System.out.println(users.get(1));
-        System.out.println(users.get(2));
-        System.out.println(users.get(3));
+        try {
+            System.out.println(users.findById(15));
+        } catch (UserNotFoundException e) {
+            System.out.println("User Not Found");
+        }
         System.out.println(users.size());
         System.out.println(users.findById(2));
-
     }
 }
