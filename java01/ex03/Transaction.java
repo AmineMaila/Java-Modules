@@ -2,7 +2,7 @@
 import java.util.UUID;
 
 public class Transaction {
-    private final UUID id = UUID.randomUUID();
+    private final UUID id;
     private final User recipient;
     private final User sender;
     private final TransferCategory transferType;
@@ -17,6 +17,7 @@ public class Transaction {
         this.sender = sender;
         this.recipient = recipient;
         this.transferType = transferType;
+        this.id = UUID.randomUUID();
         
         setAmount(amount);
     }

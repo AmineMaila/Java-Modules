@@ -22,6 +22,15 @@ public class Transaction {
         setAmount(amount);
     }
 
+    public Transaction(UUID transactionId, User sender, User recipient, TransferCategory transferType, double amount) {
+        this.sender = sender;
+        this.recipient = recipient;
+        this.transferType = transferType;
+        this.id = transactionId;
+        
+        setAmount(amount);
+    }
+
     public UUID getId() {
         return this.id;
     }
