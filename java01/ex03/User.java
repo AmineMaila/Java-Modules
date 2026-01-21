@@ -2,16 +2,16 @@
 public class User {
 	private final int identifier;
 	private String name;
-	private double balance;
+	private long balance;
 	private TransactionsList transactions;
 
-	public User(String name, double balance) {
+	public User(String name, long balance) {
 		this.name = name;
 		this.identifier = UserIdsGenerator.getInstance().generateId();
 		setBalance(balance);
 	}
 
-	public double setBalance(double balance) {
+	public long setBalance(long balance) {
 		if (balance < 0) {
 			System.out.println("User balance cannot be negative");
 			return -1;
@@ -24,7 +24,7 @@ public class User {
 		this.name = name;
 	}
 
-	public double getBalance() {
+	public long getBalance() {
 		return balance;
 	}
 
@@ -38,6 +38,6 @@ public class User {
 
 	@Override
     public String toString() {
-        return "User[ID: %d, Name: %s, Balance: %f]".formatted(identifier, name, balance);
+        return "User[ID: %d, Name: %s, Balance: %d]".formatted(identifier, name, balance);
     }
 }

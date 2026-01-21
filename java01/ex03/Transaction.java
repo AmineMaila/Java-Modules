@@ -6,14 +6,14 @@ public class Transaction {
     private final User recipient;
     private final User sender;
     private final TransferCategory transferType;
-    private double amount;
+    private long amount;
 
     public enum TransferCategory {
         CREDIT,
         DEBIT
     }
     
-    public Transaction(User sender, User recipient, TransferCategory transferType, double amount) {
+    public Transaction(User sender, User recipient, TransferCategory transferType, long amount) {
         this.sender = sender;
         this.recipient = recipient;
         this.transferType = transferType;
@@ -38,11 +38,11 @@ public class Transaction {
         return this.transferType;
     }
 
-    public double getAmount() {
+    public long getAmount() {
         return this.amount;
     }
 
-    public double setAmount(double amount) {
+    public long setAmount(long amount) {
         if ((transferType == TransferCategory.CREDIT && amount < 0)
             || (transferType == TransferCategory.DEBIT && amount > 0)) {
             System.err.println("Error: transaction ammount doesn't match transaction type");
@@ -55,7 +55,7 @@ public class Transaction {
 
     @Override
     public String toString() {
-        return "Transaction[ID: %s, sender: %s, recipient: %s, type: %s, amount: %f]"
+        return "Transaction[ID: %s, sender: %s, recipient: %s, type: %s, amount: %d]"
             .formatted(id, sender, recipient, transferType, amount);
     }
 }

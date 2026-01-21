@@ -13,6 +13,10 @@ public class TransactionsService {
         return newUser;
     }
 
+    public String getUserName(int id) {
+        return users.findById(id).getName();
+    }
+
     public long getUserBalance(int id) {
         return users.findById(id).getBalance();
     }
