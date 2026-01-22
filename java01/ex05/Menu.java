@@ -24,13 +24,13 @@ public class Menu {
         1. Add a user
         2. View user balances
         3. Perform a transfer
-        4. View all transactions for a specific user
+        4. View all transactions for a specific user\
         """);
         if (dev) {
             System.out.println("""
             5. DEV - remove a transfer by ID
             6. DEV - check transfer validity
-            7. Finish execution
+            7. Finish execution\
             """);
         } else {
             System.out.println("5. Finish execution");
@@ -39,27 +39,32 @@ public class Menu {
 
     public void run() {
         Scanner sc = new Scanner(System.in);
-        while (sc.hasNextLine()) {
+        printMenu();
+        while (sc.hasNext()) {
             try {
-                printMenu();
                 if (!sc.hasNextInt()) {
+                    sc.next();
                     throw new InvalidInputException();
                 }
                 int cmdNum = sc.nextInt();
                 String cmdRem = sc.nextLine().trim();
-                if (!cmdRem.isEmpty())
+                if (!cmdRem.isEmpty()) {
                     throw new InvalidInputException();
+                }
+
                 switch (cmdNum) {
                     case 1 -> {
                         System.out.println("Enter a user name and a balance");
                         String name = sc.next();
                         if (!sc.hasNextLong()) {
+                            sc.next();
                             throw new InvalidInputException();
                         }
                         long balance = sc.nextLong();
                         String remainder = sc.nextLine().trim();
-                        if (!remainder.isEmpty())
+                        if (!remainder.isEmpty()) {
                             throw new InvalidInputException();
+                        }
     
                         User newUser = svc.addUser(name, balance);
                         System.out.println("User with id = " + newUser.getId() + " is added");
@@ -67,12 +72,14 @@ public class Menu {
                     case 2 -> {
                         System.out.println("Enter a user ID");
                         if (!sc.hasNextInt()) {
+                            sc.next();
                             throw new InvalidInputException();
                         }
                         int userId = sc.nextInt();
                         String remainder = sc.nextLine().trim();
-                        if (!remainder.isEmpty())
+                        if (!remainder.isEmpty()) {
                             throw new InvalidInputException();
+                        }
 
                         String name = svc.getUserName(userId);
                         long balance = svc.getUserBalance(userId);
@@ -81,35 +88,41 @@ public class Menu {
                     case 3 -> {
                         System.out.println("Enter a sender ID, a recipient ID, and a transfer amount");
                         if (!sc.hasNextInt()) {
+                            sc.next();
                             throw new InvalidInputException();
                         }
                         int senderId = sc.nextInt();
                         if (!sc.hasNextInt()) {
+                            sc.next();
                             throw new InvalidInputException();
                         }
                         int recipientId = sc.nextInt();
 
                         if (!sc.hasNextLong()) {
+                            sc.next();
                             throw new InvalidInputException();
                         }
                         long amount = sc.nextLong();
 
                         String remainder = sc.nextLine().trim();
-                        if (!remainder.isEmpty())
+                        if (!remainder.isEmpty()) {
                             throw new InvalidInputException();
+                        }
                         svc.transfer(senderId, recipientId, amount);
                         System.out.println("The transfer is completed");
                     }
                     case 4 -> {
                         System.out.println("Enter a user ID");
                         if (!sc.hasNextInt()) {
+                            sc.next();
                             throw new InvalidInputException();
                         }
 
                         int userId = sc.nextInt();
                         String remainder = sc.nextLine().trim();
-                        if (!remainder.isEmpty())
+                        if (!remainder.isEmpty()) {
                             throw new InvalidInputException();
+                        }
 
                         Transaction[] txs = svc.getUserTransfers(userId);
                         for (Transaction tx : txs) {
@@ -117,7 +130,7 @@ public class Menu {
                                 User recipient = tx.getRecipient();
                                 System.out.println("To %s(id = %d) %d with id = %s".formatted(recipient.getName(), recipient.getId(), tx.getAmount(), tx.getId()));
                             } else {
-                                User sender = tx.getRecipient();
+                                User sender = tx.getSender();
                                 System.out.println("From %s(id = %d) %d with id = %s".formatted(sender.getName(), sender.getId(), tx.getAmount(), tx.getId()));
                             }
                         }
@@ -129,11 +142,13 @@ public class Menu {
                         }
                         System.out.println("Enter a user ID and a transfer ID");
                         if (!sc.hasNextInt()) {
+                            sc.next();
                             throw new InvalidInputException();
                         }
                         int userId = sc.nextInt();
 
                         if (!sc.hasNext()) {
+                            sc.next();
                             throw new InvalidInputException();
                         }
                         UUID transferId = UUID.fromString(sc.next());
@@ -150,10 +165,22 @@ public class Menu {
                         if (!dev) {
                             throw new UnknownOptionException();
                         }
-                        System.out.println("Check Results:");
+                        System.out.println("Check results:");
                         Transaction[] unpairedTransactions = svc.checkValidity();
-                        for () {
-                            
+                        for (Transaction tx : unpairedTransactions) {
+                            User recipient = tx.getRecipient();
+                            User sender = tx.getSender();
+                            System.out.println(
+                                "%s(id = %d) has an unacknowledged transfer id = %s from %s(id = %d) for %d"
+                                .formatted(
+                                    recipient.getName(),
+                                    recipient.getId(),
+                                    tx.getId(),
+                                    sender.getName(),
+                                    sender.getId(),
+                                    tx.getAmount()
+                                )
+                            );
                         }
                     }
                     case 7 -> {
@@ -169,6 +196,7 @@ public class Menu {
                 System.err.println("Error: " + ite.getMessage());
             }
             System.out.println("---------------------------------------------------------");
+            printMenu();
         }
         sc.close();
     }

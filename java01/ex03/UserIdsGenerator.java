@@ -1,7 +1,7 @@
 
 public class UserIdsGenerator {
     private static UserIdsGenerator instance = null;
-    private int lastGeneratedId = -1;
+    private int lastGeneratedId = 0;
 
     public static UserIdsGenerator getInstance() {
         if (instance == null)
