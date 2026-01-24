@@ -3,6 +3,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Main {
     public static void main(String[] args) {
@@ -18,14 +20,10 @@ public class Main {
             DecimalFormat df = new DecimalFormat("#.##");
             df.setRoundingMode(RoundingMode.DOWN);
             System.out.println("Similarity = " + df.format(FileSimilarity.calculate(mapA, mapB)));
-
             try (BufferedWriter writer = new BufferedWriter(new FileWriter("dictionary.txt"))) {
-                for (String word: mapA.keySet()) {
-                    writer.write(word);
-                    writer.newLine();
-                }
-    
-                for (String word: mapB.keySet()) {
+                Set<String> dictionary = new HashSet<>(mapA.keySet());
+                dictionary.addAll(mapB.keySet());
+                for (String word: dictionary) {
                     writer.write(word);
                     writer.newLine();
                 }
