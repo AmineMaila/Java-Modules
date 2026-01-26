@@ -6,7 +6,7 @@ import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.Set;
 
-public class Main {
+public class Program {
     public static void main(String[] args) {
         if (args.length != 2) {
             System.err.println("Wrong argument count");

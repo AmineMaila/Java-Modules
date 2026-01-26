@@ -4,12 +4,12 @@ import java.util.UUID;
 public class Menu {
     private final TransactionsService svc = new TransactionsService();
     private final boolean dev;
-    private class InvalidInputException extends RuntimeException {
+    private static class InvalidInputException extends RuntimeException {
         InvalidInputException() {
             super("invalid input");
         }
     };
-    private class UnknownOptionException extends RuntimeException {
+    private static class UnknownOptionException extends RuntimeException {
         UnknownOptionException() {
             super("unknown option");
         }
@@ -44,12 +44,12 @@ public class Menu {
             try {
                 if (!sc.hasNextInt()) {
                     sc.next();
-                    throw new InvalidInputException();
+                    throw new Menu.InvalidInputException();
                 }
                 int cmdNum = sc.nextInt();
                 String cmdRem = sc.nextLine().trim();
                 if (!cmdRem.isEmpty()) {
-                    throw new InvalidInputException();
+                    throw new Menu.InvalidInputException();
                 }
 
                 switch (cmdNum) {
@@ -58,12 +58,12 @@ public class Menu {
                         String name = sc.next();
                         if (!sc.hasNextLong()) {
                             sc.next();
-                            throw new InvalidInputException();
+                            throw new Menu.InvalidInputException();
                         }
                         long balance = sc.nextLong();
                         String remainder = sc.nextLine().trim();
                         if (!remainder.isEmpty()) {
-                            throw new InvalidInputException();
+                            throw new Menu.InvalidInputException();
                         }
     
                         User newUser = svc.addUser(name, balance);
@@ -73,12 +73,12 @@ public class Menu {
                         System.out.println("Enter a user ID");
                         if (!sc.hasNextInt()) {
                             sc.next();
-                            throw new InvalidInputException();
+                            throw new Menu.InvalidInputException();
                         }
                         int userId = sc.nextInt();
                         String remainder = sc.nextLine().trim();
                         if (!remainder.isEmpty()) {
-                            throw new InvalidInputException();
+                            throw new Menu.InvalidInputException();
                         }
 
                         String name = svc.getUserName(userId);
@@ -89,24 +89,24 @@ public class Menu {
                         System.out.println("Enter a sender ID, a recipient ID, and a transfer amount");
                         if (!sc.hasNextInt()) {
                             sc.next();
-                            throw new InvalidInputException();
+                            throw new Menu.InvalidInputException();
                         }
                         int senderId = sc.nextInt();
                         if (!sc.hasNextInt()) {
                             sc.next();
-                            throw new InvalidInputException();
+                            throw new Menu.InvalidInputException();
                         }
                         int recipientId = sc.nextInt();
 
                         if (!sc.hasNextLong()) {
                             sc.next();
-                            throw new InvalidInputException();
+                            throw new Menu.InvalidInputException();
                         }
                         long amount = sc.nextLong();
 
                         String remainder = sc.nextLine().trim();
                         if (!remainder.isEmpty()) {
-                            throw new InvalidInputException();
+                            throw new Menu.InvalidInputException();
                         }
                         svc.transfer(senderId, recipientId, amount);
                         System.out.println("The transfer is completed");
@@ -115,13 +115,13 @@ public class Menu {
                         System.out.println("Enter a user ID");
                         if (!sc.hasNextInt()) {
                             sc.next();
-                            throw new InvalidInputException();
+                            throw new Menu.InvalidInputException();
                         }
 
                         int userId = sc.nextInt();
                         String remainder = sc.nextLine().trim();
                         if (!remainder.isEmpty()) {
-                            throw new InvalidInputException();
+                            throw new Menu.InvalidInputException();
                         }
 
                         Transaction[] txs = svc.getUserTransfers(userId);
@@ -143,13 +143,13 @@ public class Menu {
                         System.out.println("Enter a user ID and a transfer ID");
                         if (!sc.hasNextInt()) {
                             sc.next();
-                            throw new InvalidInputException();
+                            throw new Menu.InvalidInputException();
                         }
                         int userId = sc.nextInt();
 
                         if (!sc.hasNext()) {
                             sc.next();
-                            throw new InvalidInputException();
+                            throw new Menu.InvalidInputException();
                         }
                         UUID transferId = UUID.fromString(sc.next());
                         Transaction tx = svc.removeUserTransaction(userId, transferId);
@@ -163,7 +163,7 @@ public class Menu {
                     }
                     case 6 -> {
                         if (!dev) {
-                            throw new UnknownOptionException();
+                            throw new Menu.UnknownOptionException();
                         }
                         System.out.println("Check results:");
                         Transaction[] unpairedTransactions = svc.checkValidity();
@@ -185,12 +185,12 @@ public class Menu {
                     }
                     case 7 -> {
                         if (!dev) {
-                            throw new UnknownOptionException();
+                            throw new Menu.UnknownOptionException();
                         }
                         sc.close();
                         return;
                     }
-                    default -> throw new UnknownOptionException();
+                    default -> throw new Menu.UnknownOptionException();
                 }
             } catch (RuntimeException ite) {
                 System.err.println("Error: " + ite.getMessage());

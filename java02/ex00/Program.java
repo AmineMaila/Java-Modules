@@ -1,6 +1,6 @@
 import java.io.IOException;
 
-public class Main {
+public class Program {
     private static final String SIGNATURE_FILE_NAME = "signatures.txt";
     
     public static void main(String[] args) {
