@@ -53,7 +53,13 @@ public class Program {
 				return;
 			}
 
-			BmpPrinter.print(img, args[1].charAt(0), args[2].charAt(0));
+			var imgArray = BmpPrinter.pixelToChar(img, args[0].charAt(0), args[1].charAt(0));
+			for (char[] row: imgArray) {
+				for (char pixel: row) {
+					System.out.print(pixel);
+				}
+				System.out.println();
+			}
 		} catch (InvalidPathException e) {
 			System.err.println("error: " + e.getMessage());
 		} catch (IOException e) {
