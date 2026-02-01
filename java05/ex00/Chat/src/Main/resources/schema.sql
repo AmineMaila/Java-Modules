@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS chatrooms (
     owner BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS users_chartoorms (
+CREATE TABLE IF NOT EXISTS users_chatrooms (
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     chatroom_id BIGINT NOT NULL REFERENCES chatrooms(id) ON DELETE CASCADE, 
     PRIMARY KEY (user_id, chatroom_id)
