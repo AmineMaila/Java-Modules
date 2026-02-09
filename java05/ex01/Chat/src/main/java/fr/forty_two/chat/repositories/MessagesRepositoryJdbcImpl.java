@@ -1,0 +1,91 @@
+package fr.forty_two.chat.repositories;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Optional;
+
+import javax.sql.DataSource;
+
+import fr.forty_two.chat.models.Chatroom;
+import fr.forty_two.chat.models.Message;
+import fr.forty_two.chat.models.User;
+
+public class MessagesRepositoryJdbcImpl implements MessagesRepository {
+    private final DataSource engine;
+
+    public MessagesRepositoryJdbcImpl(DataSource engine) {
+        this.engine = engine;
+    }
+    
+    @Override
+    public Optional<Message> findById(Long id) {
+        try (Connection conn = engine.getConnection()) {
+            String sql = """
+            SELECT
+                m.id AS message_id,
+                m.content,
+                m.created_at,
+
+                u.id AS author_id,
+                u.username AS author_username,
+                u.password AS author_password,
+
+                c.id AS chatroom_id,
+                c.name AS chatroom_name,
+                
+                o.id AS owner_id,
+                o.username AS owner_username,
+                o.password AS owner_password
+            FROM messages m
+            JOIN users u ON m.author = u.id
+            JOIN chatrooms c ON m.room = c.id
+            JOIN users o ON c.owner = o.id
+            WHERE m.id = ?
+            """;
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ps.setLong(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    User author = new User(
+                        rs.getLong("author_id"),
+                        rs.getString("author_username"),
+                        rs.getString("author_password"),
+                        null,
+                        null
+                    );
+
+                    User owner = new User(
+                        rs.getLong("owner_id"),
+                        rs.getString("owner_username"),
+                        rs.getString("owner_password"),
+                        null,
+                        null
+                    );
+
+                    Chatroom room = new Chatroom(
+                        rs.getLong("chatroom_id"),
+                        rs.getString("chatroom_name"),
+                        owner,
+                        null
+                    );
+
+                    return Optional.of(new Message(
+                        id,
+                        author,
+                        room,
+                        rs.getString("content"),
+                        rs.getTimestamp("created_at")
+                    ));
+                } else {
+                    return Optional.empty();
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLERR: " + e);
+            return Optional.empty();
+        }
+    }
+}
