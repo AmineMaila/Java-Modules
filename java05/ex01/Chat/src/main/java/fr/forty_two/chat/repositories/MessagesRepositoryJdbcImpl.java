@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Optional;
 
 import javax.sql.DataSource;
@@ -72,12 +73,13 @@ public class MessagesRepositoryJdbcImpl implements MessagesRepository {
                         null
                     );
 
+                    Timestamp created_at = rs.getTimestamp("created_at");
                     return Optional.of(new Message(
                         id,
                         author,
                         room,
                         rs.getString("content"),
-                        rs.getTimestamp("created_at").toLocalDateTime()
+                        created_at == null ? null : created_at.toLocalDateTime()
                     ));
                 } else {
                     return Optional.empty();

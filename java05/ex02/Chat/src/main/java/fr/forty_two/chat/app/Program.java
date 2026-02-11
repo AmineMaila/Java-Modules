@@ -18,7 +18,7 @@ class Program {
         ds.setUsername("mmaila");
         ds.setPassword("1234");
 
-        User author = new User(6L, "user", "user", new ArrayList<>(), new ArrayList<>());
+        User author = new User(3L, "user", "user", new ArrayList<>(), new ArrayList<>());
         User creator = author;
         Chatroom room = new Chatroom(3L, "room", creator, new ArrayList<>());
         Message message = new Message(null, author, room, "Test!", LocalDateTime.now());

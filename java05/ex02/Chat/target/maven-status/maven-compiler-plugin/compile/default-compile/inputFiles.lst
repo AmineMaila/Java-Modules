@@ -1,0 +1,7 @@
+/home/mmaila/Desktop/Java-Modules/java05/ex02/Chat/src/main/java/fr/forty_two/chat/app/Program.java
+/home/mmaila/Desktop/Java-Modules/java05/ex02/Chat/src/main/java/fr/forty_two/chat/exceptions/NotSavedSubEntityException.java
+/home/mmaila/Desktop/Java-Modules/java05/ex02/Chat/src/main/java/fr/forty_two/chat/models/Chatroom.java
+/home/mmaila/Desktop/Java-Modules/java05/ex02/Chat/src/main/java/fr/forty_two/chat/models/Message.java
+/home/mmaila/Desktop/Java-Modules/java05/ex02/Chat/src/main/java/fr/forty_two/chat/models/User.java
+/home/mmaila/Desktop/Java-Modules/java05/ex02/Chat/src/main/java/fr/forty_two/chat/repositories/MessagesRepository.java
+/home/mmaila/Desktop/Java-Modules/java05/ex02/Chat/src/main/java/fr/forty_two/chat/repositories/MessagesRepositoryJdbcImpl.java

@@ -22,10 +22,79 @@ public class MessagesRepositoryJdbcImpl implements MessagesRepository {
     public MessagesRepositoryJdbcImpl(DataSource engine) {
         this.engine = engine;
     }
+
+    private void checkAuthorAndRoomExistence(Connection conn, Long authorId, Long roomId) throws SQLException {
+        PreparedStatement userPs = conn.prepareStatement("""
+                SELECT COUNT(*) FROM users WHERE id = ?""");
+        PreparedStatement chatroomPs = conn.prepareStatement("""
+                SELECT COUNT(*) FROM chatrooms WHERE id = ?""");
+        userPs.setLong(1, authorId);
+        chatroomPs.setLong(1, roomId);
+
+        try (var userRs = userPs.executeQuery()) {
+            userRs.next();
+            if (userRs.getLong(1) == 0) {
+                throw new NotSavedSubEntityException("author of message does not exist");
+            }
+        }
+
+        try (var chatroomRs = chatroomPs.executeQuery()) {
+            chatroomRs.next();
+            if (chatroomRs.getLong(1) == 0) {
+                throw new NotSavedSubEntityException("chatroom of message does not exist");
+            }
+        }
+    }
     
+    @Override
+    public void update(Message message) {
+        try (Connection conn = engine.getConnection()) {
+            Long authorId = message.getAuthor().getId();
+            Long roomId = message.getRoom().getId();
+            checkAuthorAndRoomExistence(
+                conn,
+                authorId,
+                roomId
+            );
+            
+            PreparedStatement ps = conn.prepareStatement(
+                """
+                UPDATE messages
+                SET
+                    author = ?,
+                    room = ?,
+                    content = ?,
+                    created_at = ?
+                WHERE id = ?""");
+
+            ps.setLong(1, authorId);
+            ps.setLong(2, roomId);
+            ps.setString(3, message.getMessage());
+            LocalDateTime created_at = message.getCreated_at();
+            if (created_at == null) {
+                ps.setNull(4, Types.TIMESTAMP);
+            } else {
+                ps.setTimestamp(4, Timestamp.valueOf(created_at));
+            }
+            ps.setLong(5, message.getId());
+            ps.executeUpdate();
+        } catch(SQLException e) {
+            System.err.print("SQLERR: ");
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void save(Message message) {
         try (Connection conn = engine.getConnection()) {
+            Long authorId = message.getAuthor().getId();
+            Long roomId = message.getRoom().getId();
+            checkAuthorAndRoomExistence(
+                conn,
+                authorId,
+                roomId
+            );
+
             PreparedStatement msgPs = conn.prepareStatement("""
                 INSERT INTO messages (
                     author,
@@ -35,29 +104,9 @@ public class MessagesRepositoryJdbcImpl implements MessagesRepository {
                 ) VALUES(?, ?, ?, ?)""",
                 PreparedStatement.RETURN_GENERATED_KEYS);
 
-            PreparedStatement userPs = conn.prepareStatement("""
-                    SELECT COUNT(*) FROM users WHERE id = ?""");
-            PreparedStatement chatroomPs = conn.prepareStatement("""
-                    SELECT COUNT(*) FROM chatrooms WHERE id = ?""");
-            userPs.setLong(1, message.getAuthor().getId());
-            chatroomPs.setLong(1, message.getRoom().getId());
 
-            try (var userRs = userPs.executeQuery()) {
-                userRs.next();
-                if (userRs.getLong(1) == 0) {
-                    throw new NotSavedSubEntityException("author of message does not exist");
-                }
-            }
-
-            try (var chatroomRs = chatroomPs.executeQuery()) {
-                chatroomRs.next();
-                if (chatroomRs.getLong(1) == 0) {
-                    throw new NotSavedSubEntityException("chatroom of message does not exist");
-                }
-            }
-
-            msgPs.setLong(1, message.getAuthor().getId());
-            msgPs.setLong(2, message.getRoom().getId());
+            msgPs.setLong(1, authorId);
+            msgPs.setLong(2, roomId);
             msgPs.setString(3, message.getMessage());
             LocalDateTime created_at = message.getCreated_at();
             if (created_at == null) {
@@ -129,7 +178,6 @@ public class MessagesRepositoryJdbcImpl implements MessagesRepository {
                         owner,
                         null
                     );
-
                     Timestamp created_at = rs.getTimestamp("created_at");
                     return Optional.of(new Message(
                         id,
