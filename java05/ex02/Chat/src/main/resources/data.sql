@@ -29,6 +29,7 @@ CROSS JOIN (
 ) AS r(name);
 
 
+
 -- this statment insert every user to every chatroom
 INSERT INTO users_chatrooms (user_id, chatroom_id)
 SELECT u.id, c.id

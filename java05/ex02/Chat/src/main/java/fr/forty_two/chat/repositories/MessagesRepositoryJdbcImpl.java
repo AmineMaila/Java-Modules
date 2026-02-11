@@ -4,10 +4,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Optional;
 
 import javax.sql.DataSource;
 
+import fr.forty_two.chat.exceptions.NotSavedSubEntityException;
 import fr.forty_two.chat.models.Chatroom;
 import fr.forty_two.chat.models.Message;
 import fr.forty_two.chat.models.User;
@@ -19,6 +21,55 @@ public class MessagesRepositoryJdbcImpl implements MessagesRepository {
         this.engine = engine;
     }
     
+    @Override
+    public void save(Message message) {
+        try (Connection conn = engine.getConnection()) {
+            PreparedStatement msgPs = conn.prepareStatement("""
+                INSERT INTO messages (
+                    author,
+                    room,
+                    content,
+                    created_at
+                ) VALUES(?, ?, ?, ?)""",
+                PreparedStatement.RETURN_GENERATED_KEYS);
+
+            PreparedStatement userPs = conn.prepareStatement("""
+                    SELECT COUNT(*) FROM users WHERE id = ?""");
+            PreparedStatement chatroomPs = conn.prepareStatement("""
+                    SELECT COUNT(*) FROM chatrooms WHERE id = ?""");
+            userPs.setLong(1, message.getAuthor().getId());
+            chatroomPs.setLong(1, message.getRoom().getId());
+
+            try (var userRs = userPs.executeQuery()) {
+                userRs.next();
+                if (userRs.getLong(1) == 0) {
+                    throw new NotSavedSubEntityException("author of message does not exist");
+                }
+            }
+
+            try (var chatroomRs = chatroomPs.executeQuery()) {
+                chatroomRs.next();
+                if (chatroomRs.getLong(1) == 0) {
+                    throw new NotSavedSubEntityException("chatroom of message does not exist");
+                }
+            }
+
+            msgPs.setLong(1, message.getAuthor().getId());
+            msgPs.setLong(2, message.getRoom().getId());
+            msgPs.setString(3, message.getMessage());
+            msgPs.setTimestamp(4, Timestamp.valueOf(message.getCreated_at()));
+            msgPs.executeUpdate();
+            try (ResultSet generatedKeys = msgPs.getGeneratedKeys()) {
+                generatedKeys.next();
+                message.setId(generatedKeys.getLong(1));
+            }
+        } catch (SQLException e) {
+            System.err.print("SQLERR: ");
+            e.printStackTrace();
+        }
+        
+    }
+
     @Override
     public Optional<Message> findById(Long id) {
         try (Connection conn = engine.getConnection()) {
@@ -84,8 +135,7 @@ public class MessagesRepositoryJdbcImpl implements MessagesRepository {
                 }
             }
         } catch (SQLException e) {
-            System.err.print("SQLERR: ");
-            e.printStackTrace();
+            System.err.println("SQLERR: " + e);
             return Optional.empty();
         }
     }
