@@ -1,7 +1,0 @@
-fr/forty_two/chat/models/User.class
-fr/forty_two/chat/repositories/MessagesRepositoryJdbcImpl.class
-fr/forty_two/chat/models/Chatroom.class
-fr/forty_two/chat/exceptions/NotSavedSubEntityException.class
-fr/forty_two/chat/models/Message.class
-fr/forty_two/chat/repositories/MessagesRepository.class
-fr/forty_two/chat/app/Program.class
