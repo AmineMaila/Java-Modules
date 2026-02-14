@@ -1,5 +1,0 @@
-INSERT INTO product (name, price) VALUES('book', 11.99)
-INSERT INTO product (name, price) VALUES('elden ring', 59.99)
-INSERT INTO product (name, price) VALUES('computer', 749.99)
-INSERT INTO product (name, price) VALUES('rubix cube', 4.99)
-INSERT INTO product (name, price) VALUES('bike', 999.99)
