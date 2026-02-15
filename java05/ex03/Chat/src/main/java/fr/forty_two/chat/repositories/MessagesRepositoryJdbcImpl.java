@@ -22,41 +22,10 @@ public class MessagesRepositoryJdbcImpl implements MessagesRepository {
     public MessagesRepositoryJdbcImpl(DataSource engine) {
         this.engine = engine;
     }
-
-    private void checkAuthorAndRoomExistence(Connection conn, Long authorId, Long roomId) throws SQLException {
-        PreparedStatement userPs = conn.prepareStatement("""
-                SELECT COUNT(*) FROM users WHERE id = ?""");
-        PreparedStatement chatroomPs = conn.prepareStatement("""
-                SELECT COUNT(*) FROM chatrooms WHERE id = ?""");
-        userPs.setLong(1, authorId);
-        chatroomPs.setLong(1, roomId);
-
-        try (var userRs = userPs.executeQuery()) {
-            userRs.next();
-            if (userRs.getLong(1) == 0) {
-                throw new NotSavedSubEntityException("author of message does not exist");
-            }
-        }
-
-        try (var chatroomRs = chatroomPs.executeQuery()) {
-            chatroomRs.next();
-            if (chatroomRs.getLong(1) == 0) {
-                throw new NotSavedSubEntityException("chatroom of message does not exist");
-            }
-        }
-    }
     
     @Override
     public void update(Message message) {
-        try (Connection conn = engine.getConnection()) {
-            Long authorId = message.getAuthor().getId();
-            Long roomId = message.getRoom().getId();
-            checkAuthorAndRoomExistence(
-                conn,
-                authorId,
-                roomId
-            );
-            
+        try (Connection conn = engine.getConnection();
             PreparedStatement ps = conn.prepareStatement(
                 """
                 UPDATE messages
@@ -65,7 +34,10 @@ public class MessagesRepositoryJdbcImpl implements MessagesRepository {
                     room = ?,
                     content = ?,
                     created_at = ?
-                WHERE id = ?""");
+                WHERE id = ?""")) {
+
+            Long authorId = message.getAuthor().getId();
+            Long roomId = message.getRoom().getId();
 
             ps.setLong(1, authorId);
             ps.setLong(2, roomId);
@@ -86,24 +58,38 @@ public class MessagesRepositoryJdbcImpl implements MessagesRepository {
 
     @Override
     public void save(Message message) {
-        try (Connection conn = engine.getConnection()) {
-            Long authorId = message.getAuthor().getId();
-            Long roomId = message.getRoom().getId();
-            checkAuthorAndRoomExistence(
-                conn,
-                authorId,
-                roomId
-            );
-
+        try (Connection conn = engine.getConnection();
             PreparedStatement msgPs = conn.prepareStatement("""
                 INSERT INTO messages (
                     author,
                     room,
                     content,
                     created_at
-                ) VALUES(?, ?, ?, ?)""",
-                PreparedStatement.RETURN_GENERATED_KEYS);
+                ) VALUES(?, ?, ?, ?)""",PreparedStatement.RETURN_GENERATED_KEYS);
+            PreparedStatement userPs = conn.prepareStatement("""
+                    SELECT COUNT(*) FROM users WHERE id = ?""");
+            PreparedStatement chatroomPs = conn.prepareStatement("""
+                    SELECT COUNT(*) FROM chatrooms WHERE id = ?""")) {
 
+            Long authorId = message.getAuthor().getId();
+            Long roomId = message.getRoom().getId();
+
+            userPs.setLong(1, authorId);
+            chatroomPs.setLong(1, roomId);
+
+            try (var userRs = userPs.executeQuery()) {
+                userRs.next();
+                if (userRs.getLong(1) == 0) {
+                    throw new NotSavedSubEntityException("author of message does not exist");
+                }
+            }
+
+            try (var chatroomRs = chatroomPs.executeQuery()) {
+                chatroomRs.next();
+                if (chatroomRs.getLong(1) == 0) {
+                    throw new NotSavedSubEntityException("chatroom of message does not exist");
+                }
+            }
 
             msgPs.setLong(1, authorId);
             msgPs.setLong(2, roomId);

@@ -22,30 +22,30 @@ public class MessagesRepositoryJdbcImpl implements MessagesRepository {
     
     @Override
     public Optional<Message> findById(Long id) {
-        try (Connection conn = engine.getConnection()) {
-            String sql = """
-            SELECT
-                m.id AS message_id,
-                m.content,
-                m.created_at,
+        String sql = """
+        SELECT
+            m.id AS message_id,
+            m.content,
+            m.created_at,
 
-                u.id AS author_id,
-                u.username AS author_username,
-                u.password AS author_password,
+            u.id AS author_id,
+            u.username AS author_username,
+            u.password AS author_password,
 
-                c.id AS chatroom_id,
-                c.name AS chatroom_name,
-                
-                o.id AS owner_id,
-                o.username AS owner_username,
-                o.password AS owner_password
-            FROM messages m
-            JOIN users u ON m.author = u.id
-            JOIN chatrooms c ON m.room = c.id
-            JOIN users o ON c.owner = o.id
-            WHERE m.id = ?
-            """;
-            PreparedStatement ps = conn.prepareStatement(sql);
+            c.id AS chatroom_id,
+            c.name AS chatroom_name,
+            
+            o.id AS owner_id,
+            o.username AS owner_username,
+            o.password AS owner_password
+        FROM messages m
+        JOIN users u ON m.author = u.id
+        JOIN chatrooms c ON m.room = c.id
+        JOIN users o ON c.owner = o.id
+        WHERE m.id = ?
+        """;
+        try (Connection conn = engine.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {

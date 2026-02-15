@@ -24,10 +24,9 @@ public class ProductsRepositoryJdbcImpl implements ProductsRepository {
     public List<Product> findAll() {
         final String sql = "SELECT * FROM product";
 
-        try (Connection conn = engine.getConnection()) {
-            Statement ps = conn.createStatement();
-
-            try (ResultSet rs = ps.executeQuery(sql)) {
+        try (Connection conn = engine.getConnection();
+            Statement stmt = conn.createStatement()) {
+            try (ResultSet rs = stmt.executeQuery(sql)) {
                 List<Product> products = new ArrayList<>();
                 
                 while (rs.next()) {
@@ -50,8 +49,8 @@ public class ProductsRepositoryJdbcImpl implements ProductsRepository {
     public Optional<Product> findById(Long id) {
         final String sql = "SELECT name, price FROM product WHERE id = ?";
 
-        try (Connection conn = engine.getConnection()) {
-            PreparedStatement ps = conn.prepareStatement(sql);
+        try (Connection conn = engine.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, id);
 
@@ -77,8 +76,8 @@ public class ProductsRepositoryJdbcImpl implements ProductsRepository {
     public void save(Product product) {
         final String sql = "INSERT INTO product (name, price) VALUES(?, ?)";
 
-        try (Connection conn = engine.getConnection()) {
-            PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
+        try (Connection conn = engine.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, product.getName());
             ps.setBigDecimal(2, product.getPrice());
@@ -99,8 +98,8 @@ public class ProductsRepositoryJdbcImpl implements ProductsRepository {
     public void update(Product product) {
         final String sql = "UPDATE product SET name = ?, price = ? WHERE id = ?";
 
-        try (Connection conn = engine.getConnection()) {
-            PreparedStatement ps = conn.prepareStatement(sql);
+        try (Connection conn = engine.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setString(1, product.getName());
             ps.setBigDecimal(2, product.getPrice());
@@ -117,8 +116,8 @@ public class ProductsRepositoryJdbcImpl implements ProductsRepository {
     public void delete(Long id) {
         final String sql = "DELETE FROM product WHERE id = ?";
 
-        try (Connection conn = engine.getConnection()) {
-            PreparedStatement ps = conn.prepareStatement(sql);
+        try (Connection conn = engine.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, id);
 

@@ -21,46 +21,47 @@ public class UsersRepositoryJdbcImpl implements UsersRepository {
 
     @Override
     public List<User> findAll(int page, int size) {
-        try (Connection conn = engine.getConnection()) {
-            final String sql = """
-                WITH created AS (
-                    SELECT
-                        u.id AS user_id,
-                        ARRAY_AGG(c.id) AS created_chatroom_ids,
-                        ARRAY_AGG(c.name) AS created_chatroom_names
-                    FROM users u
-                    LEFT JOIN chatrooms c ON u.id = c.owner
-                    GROUP BY u.id
-                ), joined AS (
-                    SELECT
-                        u.id AS user_id,
-                        ARRAY_AGG(j.id) AS joined_chatroom_ids,
-                        ARRAY_AGG(j.name) AS joined_chatroom_names
-                    FROM users u
-                    LEFT JOIN users_chatrooms uc ON u.id = uc.user_id
-                    LEFT JOIN chatrooms j ON j.id = uc.chatroom_id
-                    GROUP BY u.id
-                )
+        final String sql = """
+            WITH created AS (
                 SELECT
-                    u.id,
-                    u.username,
-                    u.password,
-
-                    created.created_chatroom_ids,
-                    created.created_chatroom_names,
-
-                    joined.joined_chatroom_ids,
-                    joined.joined_chatroom_names
+                    u.id AS user_id,
+                    ARRAY_AGG(c.id) AS created_chatroom_ids,
+                    ARRAY_AGG(c.name) AS created_chatroom_names
                 FROM users u
-                LEFT JOIN created ON u.id = created.user_id
-                LEFT JOIN joined ON u.id = joined.user_id
-                ORDER BY u.id
-                LIMIT ? OFFSET ?""";
+                LEFT JOIN chatrooms c ON u.id = c.owner
+                GROUP BY u.id
+            ), joined AS (
+                SELECT
+                    u.id AS user_id,
+                    ARRAY_AGG(j.id) AS joined_chatroom_ids,
+                    ARRAY_AGG(j.name) AS joined_chatroom_names
+                FROM users u
+                LEFT JOIN users_chatrooms uc ON u.id = uc.user_id
+                LEFT JOIN chatrooms j ON j.id = uc.chatroom_id
+                GROUP BY u.id
+            )
+            SELECT
+                u.id,
+                u.username,
+                u.password,
+
+                created.created_chatroom_ids,
+                created.created_chatroom_names,
+
+                joined.joined_chatroom_ids,
+                joined.joined_chatroom_names
+            FROM users u
+            LEFT JOIN created ON u.id = created.user_id
+            LEFT JOIN joined ON u.id = joined.user_id
+            ORDER BY u.id
+            LIMIT ? OFFSET ?""";
+            try (Connection conn = engine.getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            
             int offset = page * size;
-            PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, size);
             ps.setInt(2, offset);
-
+            
             try (ResultSet rs = ps.executeQuery()) {
                 final List<User> users = new ArrayList<>();
                 while (rs.next()) {

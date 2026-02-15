@@ -25,22 +25,24 @@ public class MessagesRepositoryJdbcImpl implements MessagesRepository {
     
     @Override
     public void save(Message message) {
-        try (Connection conn = engine.getConnection()) {
+        try (Connection conn = engine.getConnection();
             PreparedStatement msgPs = conn.prepareStatement("""
                 INSERT INTO messages (
                     author,
                     room,
                     content,
                     created_at
-                ) VALUES(?, ?, ?, ?)""",
-                PreparedStatement.RETURN_GENERATED_KEYS);
-
+                ) VALUES(?, ?, ?, ?)""",PreparedStatement.RETURN_GENERATED_KEYS);
             PreparedStatement userPs = conn.prepareStatement("""
                     SELECT COUNT(*) FROM users WHERE id = ?""");
             PreparedStatement chatroomPs = conn.prepareStatement("""
-                    SELECT COUNT(*) FROM chatrooms WHERE id = ?""");
-            userPs.setLong(1, message.getAuthor().getId());
-            chatroomPs.setLong(1, message.getRoom().getId());
+                    SELECT COUNT(*) FROM chatrooms WHERE id = ?""")) {
+
+            Long authorId = message.getAuthor().getId();
+            Long roomId = message.getRoom().getId();
+
+            userPs.setLong(1, authorId);
+            chatroomPs.setLong(1, roomId);
 
             try (var userRs = userPs.executeQuery()) {
                 userRs.next();
@@ -56,8 +58,8 @@ public class MessagesRepositoryJdbcImpl implements MessagesRepository {
                 }
             }
 
-            msgPs.setLong(1, message.getAuthor().getId());
-            msgPs.setLong(2, message.getRoom().getId());
+            msgPs.setLong(1, authorId);
+            msgPs.setLong(2, roomId);
             msgPs.setString(3, message.getMessage());
             LocalDateTime created_at = message.getCreated_at();
             if (created_at == null) {
@@ -79,30 +81,30 @@ public class MessagesRepositoryJdbcImpl implements MessagesRepository {
 
     @Override
     public Optional<Message> findById(Long id) {
-        try (Connection conn = engine.getConnection()) {
-            String sql = """
-            SELECT
-                m.id AS message_id,
-                m.content,
-                m.created_at,
+        final String sql = """
+        SELECT
+            m.id AS message_id,
+            m.content,
+            m.created_at,
 
-                u.id AS author_id,
-                u.username AS author_username,
-                u.password AS author_password,
+            u.id AS author_id,
+            u.username AS author_username,
+            u.password AS author_password,
 
-                c.id AS chatroom_id,
-                c.name AS chatroom_name,
-                
-                o.id AS owner_id,
-                o.username AS owner_username,
-                o.password AS owner_password
-            FROM messages m
-            JOIN users u ON m.author = u.id
-            JOIN chatrooms c ON m.room = c.id
-            JOIN users o ON c.owner = o.id
-            WHERE m.id = ?
-            """;
-            PreparedStatement ps = conn.prepareStatement(sql);
+            c.id AS chatroom_id,
+            c.name AS chatroom_name,
+            
+            o.id AS owner_id,
+            o.username AS owner_username,
+            o.password AS owner_password
+        FROM messages m
+        JOIN users u ON m.author = u.id
+        JOIN chatrooms c ON m.room = c.id
+        JOIN users o ON c.owner = o.id
+        WHERE m.id = ?
+        """;
+        try (Connection conn = engine.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)) {
 
             ps.setLong(1, id);
             try (ResultSet rs = ps.executeQuery()) {
