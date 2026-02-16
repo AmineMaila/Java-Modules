@@ -9,12 +9,19 @@
     <artifactId>reflection</artifactId>
     <version>0.0.1</version>
 
-    <properties>
-        <maven.compiler.release>25</maven.compiler.release>
-    </properties>
-
-    <dependencies>
-        
-    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>25</release>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

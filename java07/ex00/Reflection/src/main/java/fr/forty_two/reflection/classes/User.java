@@ -12,7 +12,7 @@ public class User {
         this.lastName = "Default last name";
         this.height = 0;
     }
-    
+
     public User(String firstName, String lastName, int height) {
         this.firstName = firstName;
         this.lastName = lastName;
