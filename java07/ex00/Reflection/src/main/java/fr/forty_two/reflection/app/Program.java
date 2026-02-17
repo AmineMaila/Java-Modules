@@ -6,10 +6,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.StringJoiner;
 
@@ -25,24 +25,27 @@ public class Program {
         try (Scanner sc = new Scanner(System.in)) {
             scanForClasses();
             printClasses();
+            System.out.println("---------------------");
             System.out.println("Enter class name:");
             System.out.print("-> ");
             String line  = sc.nextLine();
             Class<?> chosenClass = getClass(line);
             printClass(chosenClass);
+            System.out.println("---------------------");
             System.out.println("Let's create an object.");
             Object obj = createObject(chosenClass, sc);
             System.out.println("Object created: " + obj);
-            System.out.println("Enter name of the field for changing:");
-            System.out.print("-> ");
-            String fieldName = sc.nextLine();
-            updateField(fieldName, obj, sc);
-            // System.out.println("Enter name of the method for call:");
-            // String methodName = sc.nextLine();
-            // chosenClass.callMethod(methodName);
+            System.out.println("---------------------");
+            updateField(obj, sc);
+            System.out.println("Object updated: " + obj);
+            System.out.println("---------------------");
+            var returnValue = callMethod(obj, sc);
+            if (returnValue.isPresent()) {
+                System.out.println("Method returned:");
+                System.out.println(returnValue.get());
+            }
         } catch (Throwable e) {
-            System.err.println(e.getMessage());
-            e.printStackTrace();
+            System.err.println(e);
         }
     }
 
@@ -76,7 +79,6 @@ public class Program {
         for (var clazz : classes) {
             System.out.println(clazz.getSimpleName());
         }
-        System.out.println("---------------------");
     }
 
     static private void printClass(Class<?> clazz) {
@@ -99,13 +101,12 @@ public class Program {
                 // ignore
             }
             StringJoiner sj = new StringJoiner(",", "\t%s(".formatted(method.getName()), ")");
-            Type[] parameters =  method.getGenericParameterTypes();
-            for (Type param : parameters) {
-                sj.add(param.getTypeName());
+            Class<?>[] parameters =  method.getParameterTypes();
+            for (Class<?> param : parameters) {
+                sj.add(param.getSimpleName());
             }
             System.out.println(sj);
         }
-        System.out.println("---------------------");
     }
 
     static private Class<?> getClass(String className) {
@@ -137,21 +138,91 @@ public class Program {
         for (int i = 0; i < params.length; i++) {
             System.out.printf("%s:%n", params[i].getName());
             System.out.print("-> ");
-            args[i] = declareArgument(sc.nextLine(), params[i].getType().getSimpleName());
+            args[i] = objectOfType(sc.nextLine(), params[i].getType().getSimpleName());
         }
         return best.newInstance(args);
     }
 
-    static private void updateField(String fieldname, Object obj, Scanner sc) throws IllegalAccessException, NoSuchFieldException {
-        Field field = obj.getClass().getDeclaredField(fieldname);
-        System.out.printf("Enter %s value:%n", field.getType().getSimpleName());
+    static private void updateField(Object obj, Scanner sc) throws IllegalAccessException, NoSuchFieldException {
+        System.out.println("Enter name of the field for changing:");
         System.out.print("-> ");
-        String newValue = sc.nextLine();
+        String fieldname = sc.nextLine();
+        Field field = obj.getClass().getDeclaredField(fieldname);
+        String fieldTypeName = field.getType().getSimpleName();
+        System.out.printf("Enter %s value:%n", fieldTypeName);
+        System.out.print("-> ");
+        String newValueInput = sc.nextLine();
+        Object newValueObj = objectOfType(newValueInput, fieldTypeName);
         field.setAccessible(true);
-        field.set(obj, newValue);
+        field.set(obj, newValueObj);
     }
 
-    static private Object declareArgument(String input, String typeName) {
+    static private Optional<Object> callMethod(Object obj, Scanner sc) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        System.out.println("Enter name of the method for call:");
+        String methodName = sc.nextLine();
+        Method[] methods = obj.getClass().getDeclaredMethods();
+        String[] inputParms = validateMethodInput(methodName);
+        Method  method = null;
+        for (Method m: methods) {
+            if (methodName.startsWith(m.getName())) {
+                Class<?>[] methodParams = m.getParameterTypes();
+                if (methodParams.length != inputParms.length) {
+                    System.out.println("test1");
+                    continue;
+                }
+
+                boolean match = true;
+                for (int i = 0; i < methodParams.length; i++) {
+                    if (!methodParams[i].getSimpleName().equals(inputParms[i])) {
+                        match = false;
+                        break;
+                    }
+                }
+
+                if (match) {
+                    method = m;
+                    break;
+                }
+            }
+        }
+        if (method == null) {
+            throw new NoSuchMethodException("method not found");
+        }
+
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        Object[] args = new Object[parameterTypes.length];
+        for (int i = 0; i < parameterTypes.length; i++) {
+            String parameterTypeName = parameterTypes[i].getSimpleName();
+            System.out.printf("Enter %s value:%n", parameterTypeName);
+            System.out.print("-> ");
+            String value = sc.nextLine();
+            args[i] = objectOfType(value, parameterTypeName);
+        }
+
+        return Optional.ofNullable(method.invoke(obj, args));
+    }
+
+    static private String[] validateMethodInput(String methodSignature) {
+        methodSignature.trim();
+        int openParan = methodSignature.indexOf('(');
+        int closeParan = methodSignature.lastIndexOf(')');
+
+        if (openParan == -1 || closeParan == -1 || openParan > closeParan) {
+            throw new IllegalArgumentException("Invalid method signature");
+        }
+
+        String paramsPart = methodSignature.substring(openParan + 1, closeParan).trim();
+        String[] paramTypeNames;
+
+        if (paramsPart.isEmpty()) {
+            paramTypeNames = new String[0];
+        } else {
+            paramTypeNames = paramsPart.split("\\s*,\\s*");
+        }
+        return paramTypeNames;
+    }
+
+    static private Object objectOfType(String input, String typeName) {
         return switch(typeName) {
             case "Integer" -> Integer.valueOf(input);
             case "int" -> Integer.parseInt(input);
