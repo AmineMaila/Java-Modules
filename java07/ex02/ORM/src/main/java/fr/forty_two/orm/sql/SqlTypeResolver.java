@@ -1,14 +1,9 @@
 package fr.forty_two.orm.sql;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 
 import fr.forty_two.orm.annotations.OrmColumn;
-import io.github.classgraph.AnnotationInfo;
-import io.github.classgraph.BaseTypeSignature;
-import io.github.classgraph.ClassRefTypeSignature;
-import io.github.classgraph.FieldInfo;
-import io.github.classgraph.TypeSignature;
-
 public class SqlTypeResolver {
     private static final Map<String, String> TYPE_MAP = Map.of(
         "java.lang.Long", "BIGINT",
@@ -20,13 +15,13 @@ public class SqlTypeResolver {
 
     private SqlTypeResolver() {}
 
-    public static String resolve(FieldInfo field) {
-        String fieldType = extractTypeName(field);
+    public static String resolve(Field field) {
+        String fieldType = field.getType().getName();
 
         if (fieldType.equals("java.lang.String")) {
-            AnnotationInfo ormCol = field.getAnnotationInfo(OrmColumn.class);
+            OrmColumn ormCol = field.getAnnotation(OrmColumn.class);
             if (ormCol != null) {
-                int length = (int) ormCol.getParameterValues().getValue("length");
+                int length = ormCol.length();
                 return length > 0 ?"VARCHAR(" + length + ")" : "TEXT";
             }
             return "TEXT";
@@ -41,21 +36,7 @@ public class SqlTypeResolver {
         return sqlType;
     }
 
-    public static boolean isSupported(FieldInfo field) {
-        return TYPE_MAP.containsKey(extractTypeName(field));
-    }
-
-    public static String extractTypeName(FieldInfo field) {
-        TypeSignature typeSig = field.getTypeDescriptor();
-
-        if (typeSig instanceof BaseTypeSignature primitiveType) {
-            return primitiveType.getTypeStr();
-        }
-        
-        if (typeSig instanceof ClassRefTypeSignature classType) {
-            return classType.getFullyQualifiedClassName();
-        }
-
-        return "null";
+    public static boolean isSupported(Field field) {
+        return TYPE_MAP.containsKey(field.getType().getName());
     }
 }
