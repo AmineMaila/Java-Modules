@@ -1,0 +1,26 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans.xsd">
+    
+    <bean id="printerWithPrefix" class="fr.forty_two.spring.printer.PrinterWithPrefixImpl">
+        <property name="prefix" value="[WARNING]"/>
+        <constructor-arg ref="rendererStandard" />
+    </bean>
+
+    <bean id="printerWithDateTime" class="fr.forty_two.spring.printer.PrinterWithDateTimeImpl">
+        <constructor-arg ref="rendererErr" />
+    </bean>
+
+    <bean id="rendererStandard" class="fr.forty_two.spring.renderer.RendererStandardImpl">
+        <constructor-arg ref="preProcessorToUpper" />
+    </bean>
+
+    <bean id="rendererErr" class="fr.forty_two.spring.renderer.RendererErrImpl">
+        <constructor-arg ref="preProcessorToLower" />
+    </bean>
+
+    <bean id="preProcessorToUpper" class="fr.forty_two.spring.preprocessor.PreProcessorToUpperImpl"/>
+    <bean id="preProcessorToLower" class="fr.forty_two.spring.preprocessor.PreProcessorToLowerImpl"/>
+
+</beans>
