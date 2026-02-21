@@ -73,11 +73,12 @@ public class UsersRepositoryJdbcTemplateImpl implements UsersRepository {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update((conn) -> {
-            PreparedStatement ps = conn.prepareStatement(INSERT, PreparedStatement.RETURN_GENERATED_KEYS);
+            PreparedStatement ps = conn.prepareStatement(INSERT, new String[]{"id"});
             ps.setString(1, entity.getEmail());
             return ps;
         }, keyHolder);
 
+        System.out.println(keyHolder);
         entity.setId((Long)keyHolder.getKey());
     }
 
