@@ -106,8 +106,8 @@ public class OrmManager {
     }
 
     public <T> T findById(Long id, Class<T> aClass) {
-        if (!tablesMap.containsKey(aClass)) {
-            throw new IllegalArgumentException("Unknown entity '" + aClass.getName() + "'");
+        if (id == null || aClass == null || !tablesMap.containsKey(aClass)) {
+            throw new IllegalArgumentException();
         }
         
         Table table = tablesMap.get(aClass);
@@ -156,11 +156,13 @@ public class OrmManager {
         try {
             Long id = (Long)table.idColumn().field().get(entity);
             sql.append(sanitizeIdentifier(table.name()))
+                .append(" SET")
                 .append(placeholders)
                 .append("WHERE id = " + id);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+
 
         System.out.println(sql);
         try (Connection conn = engine.getConnection();
@@ -201,7 +203,6 @@ public class OrmManager {
             .append(colsNames)
             .append(" VALUES")
             .append(placeholders);
-        System.out.println(sql);
 
         try (Connection conn = engine.getConnection();
             PreparedStatement ps = conn.prepareStatement(sql.toString(), PreparedStatement.RETURN_GENERATED_KEYS)) {
