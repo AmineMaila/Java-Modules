@@ -1,4 +1,4 @@
-package fr.forty_two.service.repositories;
+package forty_two.spring.service.repositories;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,15 +9,20 @@ import java.util.Optional;
 import javax.sql.DataSource;
 
 import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.stereotype.Component;
 
-import fr.forty_two.service.models.User;
+import forty_two.spring.service.models.User;
 
+@Component
+@Qualifier("jdbcTemplate")
 public class UsersRepositoryJdbcTemplateImpl implements UsersRepository {
     private final JdbcTemplate jdbcTemplate;
     private class UserMapper implements RowMapper<User> {
@@ -25,7 +30,8 @@ public class UsersRepositoryJdbcTemplateImpl implements UsersRepository {
         public @Nullable User mapRow(ResultSet rs, int rowNum) throws SQLException {
             return new User(
                 rs.getLong("id"),
-                rs.getString("email")
+                rs.getString("email"),
+                rs.getString("password")
             );
         }
     }
@@ -37,7 +43,8 @@ public class UsersRepositoryJdbcTemplateImpl implements UsersRepository {
     private final String UPDATE = "UPDATE users SET email = ?";
     private final String DELETE = "DELETE FROM users WHERE id = ?";
 
-    public UsersRepositoryJdbcTemplateImpl(DataSource engine) {
+    @Autowired
+    public UsersRepositoryJdbcTemplateImpl(@Qualifier("hikari") DataSource engine) {
         this.jdbcTemplate = new JdbcTemplate(engine);
     }
 
@@ -78,7 +85,6 @@ public class UsersRepositoryJdbcTemplateImpl implements UsersRepository {
             return ps;
         }, keyHolder);
 
-        System.out.println(keyHolder);
         entity.setId((Long)keyHolder.getKey());
     }
 
