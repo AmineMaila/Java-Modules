@@ -12,11 +12,13 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import forty_two.spring.service.models.User;
 
 @Component
+@Lazy
 @Qualifier("jdbc")
 public class UsersRepositoryJdbcImpl implements UsersRepository {
     private final DataSource engine;
@@ -24,12 +26,12 @@ public class UsersRepositoryJdbcImpl implements UsersRepository {
     private final String SELECT_ALL = "SELECT * FROM users";
     private final String SELECT_EMAIL = "SELECT * FROM users WHERE email = ?";
     private final String SELECT_ID = "SELECT * FROM users WHERE id = ?";
-    private final String INSERT = "INSERT INTO users(email) VALUES(?)";
-    private final String UPDATE = "UPDATE users SET email = ?";
+    private final String INSERT = "INSERT INTO users(email, \"password\") VALUES(?, ?)";
+    private final String UPDATE = "UPDATE users SET email = ?, \"password\" = ?";
     private final String DELETE = "DELETE FROM users WHERE id = ?";
 
     @Autowired
-    public UsersRepositoryJdbcImpl(@Qualifier("driverManager") DataSource engine) {
+    public UsersRepositoryJdbcImpl(@Qualifier("default") DataSource engine) {
         this.engine = engine;
     }
 
@@ -103,6 +105,7 @@ public class UsersRepositoryJdbcImpl implements UsersRepository {
         try (Connection conn = engine.getConnection();
             PreparedStatement ps = conn.prepareStatement(INSERT, PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, entity.getEmail());
+            ps.setString(2, entity.getPassword());
 
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -120,6 +123,7 @@ public class UsersRepositoryJdbcImpl implements UsersRepository {
         try (Connection conn = engine.getConnection();
             PreparedStatement ps = conn.prepareStatement(UPDATE)) {
             ps.setString(1, entity.getEmail());
+            ps.setString(2, entity.getPassword());
 
             ps.executeUpdate();
         } catch (SQLException e) {

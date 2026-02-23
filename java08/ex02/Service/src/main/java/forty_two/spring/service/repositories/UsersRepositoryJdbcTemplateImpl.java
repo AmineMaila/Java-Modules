@@ -39,8 +39,8 @@ public class UsersRepositoryJdbcTemplateImpl implements UsersRepository {
     private final String SELECT_ALL = "SELECT * FROM users";
     private final String SELECT_EMAIL = "SELECT * FROM users WHERE email = ?";
     private final String SELECT_ID = "SELECT * FROM users WHERE id = ?";
-    private final String INSERT = "INSERT INTO users(email) VALUES(?)";
-    private final String UPDATE = "UPDATE users SET email = ?";
+    private final String INSERT = "INSERT INTO users(email, \"password\") VALUES(?, ?)";
+    private final String UPDATE = "UPDATE users SET email = ?, \"password\" = ?";
     private final String DELETE = "DELETE FROM users WHERE id = ?";
 
     @Autowired
@@ -82,6 +82,7 @@ public class UsersRepositoryJdbcTemplateImpl implements UsersRepository {
         jdbcTemplate.update((conn) -> {
             PreparedStatement ps = conn.prepareStatement(INSERT, new String[]{"id"});
             ps.setString(1, entity.getEmail());
+            ps.setString(2, entity.getPassword());
             return ps;
         }, keyHolder);
 
@@ -92,7 +93,8 @@ public class UsersRepositoryJdbcTemplateImpl implements UsersRepository {
     public void update(User entity) {
         jdbcTemplate.update(
             UPDATE,
-            entity.getEmail()
+            entity.getEmail(),
+            entity.getPassword()
         );
     }
 

@@ -5,6 +5,7 @@ import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -12,7 +13,8 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
-@PropertySource("classpath:db.properies")
+@ComponentScan(basePackages = "forty_two.spring.service")
+@PropertySource("classpath:db.properties")
 public class ApplicationConfig {
     @Value("${db.url}")
     private String dburl;
@@ -24,7 +26,7 @@ public class ApplicationConfig {
     private String dbpassword;
 
     @Bean
-    @Qualifier("driverManager")
+    @Qualifier("default")
     public DataSource driverManagerDataSource() {
         DriverManagerDataSource ds = new DriverManagerDataSource();
         ds.setUrl(dburl);
