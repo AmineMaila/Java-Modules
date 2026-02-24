@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -18,7 +20,7 @@ public class SocketsApplicationConfig {
     @Value("${db.url}")
     private String dbUrl;
 
-    @Value("${db.username}")
+    @Value("${db.user}")
     private String dbUsername;
 
     @Value("${db.password}")
@@ -32,5 +34,10 @@ public class SocketsApplicationConfig {
         ds.setUsername(dbUsername);
         ds.setPassword(dbPassword);
         return ds;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 }

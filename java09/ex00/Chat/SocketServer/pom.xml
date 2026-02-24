@@ -9,6 +9,9 @@
     <artifactId>sockets</artifactId>
     <version>0.0.1</version>
 
+    <properties>
+        <maven.compiler.release>25</maven.compiler.release>
+    </properties>
 
     <dependencies>
         <!-- postgresql -->
@@ -43,6 +46,14 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- spring-security-crypto -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+            <version>7.1.0-M2</version>
+            <scope>compile</scope>
+        </dependency>
+
         <!-- HikariCP -->
         <dependency>
             <groupId>com.zaxxer</groupId>
@@ -50,6 +61,6 @@
             <version>7.0.2</version>
             <scope>compile</scope>
         </dependency>
-
+    
     </dependencies>
 </project>
