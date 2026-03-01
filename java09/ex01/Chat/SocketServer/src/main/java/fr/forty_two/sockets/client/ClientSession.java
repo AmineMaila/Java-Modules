@@ -1,7 +1,6 @@
 package fr.forty_two.sockets.client;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -10,10 +9,16 @@ import java.net.Socket;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import fr.forty_two.sockets.dto.MessageDTO;
+import fr.forty_two.sockets.exceptions.AuthException;
 import fr.forty_two.sockets.models.Chatroom;
 import fr.forty_two.sockets.models.User;
+import fr.forty_two.sockets.services.MessagesService;
 import fr.forty_two.sockets.services.RoomInstance;
 import fr.forty_two.sockets.services.RoomsService;
 import fr.forty_two.sockets.services.UsersService;
@@ -21,12 +26,14 @@ import fr.forty_two.sockets.services.UsersService;
 public class ClientSession implements Runnable {
     private final UsersService usersSvc;
     private final RoomsService roomsSvc;
+    private final MessagesService msgSvc;
 
     private final Socket socket;
     private final BufferedReader reader;
     private final PrintWriter writer;
+    private final ObjectMapper JSON = new ObjectMapper();
 
-    private final Map<ClientState, Supplier<ClientState>> actionMap = new EnumMap<>(ClientState.class);
+    private final Map<ClientState, StateFunction> actionMap = new EnumMap<>(ClientState.class);
     private ClientState currentState = ClientState.LOGIN;
 
     private boolean connected = true;
@@ -34,17 +41,21 @@ public class ClientSession implements Runnable {
     private RoomInstance currentRoom = null;
 
 
-    public ClientSession(Socket socket, UsersService usersSvc, RoomsService roomsSvc) throws IOException {
+    public ClientSession(Socket socket, UsersService usersSvc, RoomsService roomsSvc, MessagesService msgSvc) throws IOException {
         this.socket = socket;
         this.usersSvc = usersSvc;
+        this.msgSvc = msgSvc;
         this.roomsSvc = roomsSvc;
         this.writer = new PrintWriter(new OutputStreamWriter(this.socket.getOutputStream()), true);
         this.reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
 
+        JSON.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+        JSON.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true);
+        JSON.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, true);
+
         actionMap.put(ClientState.LOGIN, this::login);
         actionMap.put(ClientState.DASHBOARD, this::dashboard);
         actionMap.put(ClientState.ROOM_INDEX, this::listRooms);
-        actionMap.put(ClientState.ROOM_CREATION, this::createRoom);
         actionMap.put(ClientState.CHATROOM, this::chatroom);
     }
 
@@ -65,7 +76,19 @@ public class ClientSession implements Runnable {
         }
     }
 
-    private ClientState login() {
+    private String[] readCredentials() throws IOException {
+        writer.print("Enter username:\n>");
+        String username = reader.readLine();
+        if (username == null) return null;
+        
+        writer.print("Enter password:\n>");
+        String password = reader.readLine();
+        if (password == null) return null;
+        
+        return new String[]{username, password};
+    }
+    
+    private ClientState login() throws IOException {
         writer.print("""
             1. signIn
             2. signUp
@@ -73,31 +96,20 @@ public class ClientSession implements Runnable {
             >""");
         try {
             String line = reader.readLine();
+            if (line == null) {
+                return ClientState.EXIT;
+            }
             int command = Integer.parseInt(line.trim());
 
             return switch (command) {
                 case 1 -> {
-                    writer.println("""
-                        Enter username:
-                        >""");
-                    String username = reader.readLine();
-                    writer.println("""
-                        Enter password:
-                        >""");
-                    String password = reader.readLine();
-                    usersSvc.signin(username, password);
+                    String[] credentials = readCredentials();
+                    usersSvc.signin(credentials[0], credentials[1]);
                     yield ClientState.DASHBOARD;
                 }
                 case 2 -> {
-                    writer.println("""
-                        Enter username:
-                        >""");
-                    String username = reader.readLine();
-                    writer.println("""
-                        Enter password:
-                        >""");
-                    String password = reader.readLine();
-                    usersSvc.signup(username, password);
+                    String[] credentials = readCredentials();
+                    usersSvc.signup(credentials[0], credentials[1]);
                     yield ClientState.LOGIN;
                 }
                 case 3 -> {
@@ -107,19 +119,17 @@ public class ClientSession implements Runnable {
                     writer.println("unknown command");
                     yield currentState;
                 }
-            }
+            };
         } catch (NumberFormatException e) {
             writer.println("invalid input");
             return currentState;
-        } catch (IllegalStateException e) {
+        } catch (AuthException e) {
             writer.println(e.getMessage());
             return currentState;
-        } catch (IOException e) {
-            return ClientState.EXIT;
         }
     }
 
-    private ClientState dashboard() {
+    private ClientState dashboard() throws IOException {
         writer.print("""
             1. Create room
             2. Choose room
@@ -127,11 +137,20 @@ public class ClientSession implements Runnable {
             >""");
         try {
             String line = reader.readLine();
+            if (line == null) {
+                return ClientState.EXIT;
+            }
             int command = Integer.parseInt(line.trim());
 
             return switch (command) {
                 case 1 -> {
-                    yield ClientState.ROOM_CREATION;
+                    writer.print("Enter Room name:\n>");
+                    String roomName = reader.readLine();
+                    if (roomName == null) {
+                        yield ClientState.EXIT;
+                    }
+                    roomsSvc.createRoom(roomName);
+                    yield ClientState.DASHBOARD;
                 }
                 case 2 -> {
                     yield ClientState.ROOM_INDEX;
@@ -143,21 +162,17 @@ public class ClientSession implements Runnable {
                     writer.println("unknown command");
                     yield currentState;
                 }
-            }
+            };
         } catch (NumberFormatException e) {
             writer.println("invalid input");
             return currentState;
-        } catch (IOException e) {
-            return ClientState.EXIT;
+        } catch (IllegalStateException e) {
+            writer.println(e.getMessage());
+            return currentState;
         }
-        
-    }
-    
-    private ClientState createRoom() {
-        
     }
 
-    private ClientState listRooms() {
+    private ClientState listRooms() throws IOException {
         writer.println("Rooms:");
         List<Chatroom> rooms = roomsSvc.getAllRooms();
         int i = 1;
@@ -168,7 +183,12 @@ public class ClientSession implements Runnable {
         writer.println(i + ". Exit\n>");
 
         try {
-            int command = Integer.parseInt(reader.readLine());
+            String line = reader.readLine();
+            if (line == null) {
+                return ClientState.EXIT;
+            }
+
+            int command = Integer.parseInt(line);
             if (command == rooms.size() + 1) {
                 return ClientState.EXIT;
             }
@@ -184,13 +204,29 @@ public class ClientSession implements Runnable {
         } catch (NumberFormatException e) {
             writer.println("invalid input");
             return ClientState.DASHBOARD;
-        } catch (IOException e) {
-            return ClientState.EXIT;
         }
     }
 
-    private ClientState chatroom() {
-
+    private ClientState chatroom() throws IOException {
+        
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.equalsIgnoreCase("exit")) {
+                writer.println("You have left the chat.");
+                currentRoom.leave(writer);
+                currentRoom = null;
+                return ClientState.DASHBOARD;
+            }
+            try {
+                MessageDTO msg = JSON.readValue(line, MessageDTO.class);
+                msgSvc.storeMessage(msg.getMessage(), msg.getFromId(), msg.getRoomId());
+                roomsSvc.broadcast(msg.getRoomId(), line);
+            } catch (JsonProcessingException e) {
+                writer.println("Error: invalid JSON");
+                break;
+            }
+        }
+        return ClientState.EXIT;
     }
 
 }

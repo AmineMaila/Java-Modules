@@ -12,18 +12,21 @@ import java.util.concurrent.ExecutorService;
 import org.springframework.stereotype.Component;
 
 import fr.forty_two.sockets.client.ClientSession;
+import fr.forty_two.sockets.services.MessagesService;
 import fr.forty_two.sockets.services.RoomsService;
 import fr.forty_two.sockets.services.UsersService;
 
 @Component
 public class Server {
-    private final UsersService usersSvc;
     private final ExecutorService clientPool;
+    private final UsersService usersSvc;
     private final RoomsService roomsSvc;
+    private final MessagesService msgSvc;
 
-    public Server(UsersService usersSvc, RoomsService roomsSvc, ExecutorService clientPool) {
+    public Server(UsersService usersSvc, RoomsService roomsSvc, MessagesService msgSvc, ExecutorService clientPool) {
         this.usersSvc = usersSvc;
         this.roomsSvc = roomsSvc;
+        this.msgSvc = msgSvc;
         this.clientPool = clientPool;
     }
 
@@ -75,7 +78,7 @@ public class Server {
             System.out.println("Server listening on port " +  port);
             try (Socket client = serverSocket.accept()) {
                 System.out.println("Client connected!");
-                clientPool.execute(new ClientSession(client, usersSvc, roomsSvc));
+                clientPool.execute(new ClientSession(client, usersSvc, roomsSvc, msgSvc));
             }
         } catch (IOException e) {
             e.printStackTrace();

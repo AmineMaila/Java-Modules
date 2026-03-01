@@ -5,6 +5,5 @@ public enum ClientState {
     DASHBOARD,
     CHATROOM,
     ROOM_INDEX,
-    ROOM_CREATION,
     EXIT
 }

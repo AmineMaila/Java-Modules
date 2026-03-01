@@ -31,12 +31,13 @@ public class ChatroomsRepositoryImpl implements ChatroomsRepository {
             );
         }
     }
+    private final RoomMapper ROW_MAPPER = new RoomMapper();
 
     private final String SELECT_ALL = "SELECT * FROM chatrooms";
     private final String SELECT_NAME = "SELECT * FROM chatrooms WHERE name = ?";
     private final String SELECT_ID = "SELECT * FROM chatrooms WHERE id = ?";
     private final String INSERT = "INSERT INTO chatrooms(name) VALUES(?)";
-    private final String UPDATE = "UPDATE chatrooms SET name = ?";
+    private final String UPDATE = "UPDATE chatrooms SET name = ? WHERE id = ?";
     private final String DELETE = "DELETE FROM chatrooms WHERE id = ?";
 
     public ChatroomsRepositoryImpl(DataSource engine) {
@@ -45,13 +46,13 @@ public class ChatroomsRepositoryImpl implements ChatroomsRepository {
 
     @Override
     public List<Chatroom> findAll() {
-        return jdbcTemplate.query(SELECT_ALL, new RoomMapper());
+        return jdbcTemplate.query(SELECT_ALL, ROW_MAPPER);
     }
 
     @Override
     public Optional<Chatroom> findByName(String name) {
         try {
-            return Optional.of(jdbcTemplate.queryForObject(SELECT_NAME, new RoomMapper(), name));
+            return Optional.ofNullable(jdbcTemplate.queryForObject(SELECT_NAME, ROW_MAPPER, name));
         } catch (IncorrectResultSizeDataAccessException e) {
             return Optional.empty();
         }
@@ -60,9 +61,9 @@ public class ChatroomsRepositoryImpl implements ChatroomsRepository {
     @Override
     public Optional<Chatroom> findById(Long id) {
         try {
-            return Optional.of(jdbcTemplate.queryForObject(
+            return Optional.ofNullable(jdbcTemplate.queryForObject(
                 SELECT_ID,
-                new RoomMapper(),
+                ROW_MAPPER,
                 id
             ));
         } catch (EmptyResultDataAccessException e) {
@@ -80,14 +81,15 @@ public class ChatroomsRepositoryImpl implements ChatroomsRepository {
             return ps;
         }, keyHolder);
 
-        entity.setId((Long)keyHolder.getKey());
+        entity.setId(keyHolder.getKey().longValue());
     }
 
     @Override
     public void update(Chatroom entity) {
         jdbcTemplate.update(
             UPDATE,
-            entity.getName()
+            entity.getName(),
+            entity.getId()
         );
     }
 

@@ -1,7 +1,5 @@
 package fr.forty_two.sockets.models;
 
-import java.time.OffsetDateTime;
-
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -17,6 +15,11 @@ public class Message {
     private Long id;
 
     private String content;
-    private User author;
-    private OffsetDateTime created_at;
+    private Long authorId;
+    private Long roomId;
+
+    public Message(Long id, String content) {
+        this.id = id;
+        this.content = content;
+    }
 }

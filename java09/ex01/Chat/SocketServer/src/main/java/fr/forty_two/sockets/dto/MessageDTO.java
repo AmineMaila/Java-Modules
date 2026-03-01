@@ -1,21 +1,22 @@
 package fr.forty_two.sockets.dto;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class MessageDTO {
-    private final String content;
-    private final long fromId;
-    private final long roomId;
 
-    public MessageDTO(String content, long fromId, long roomId) {
-        this.content = content;
-        this.fromId = fromId;
-        this.roomId = roomId;
+    private final String message;
+    private final String fromUsername;
+
+    @JsonCreator
+    public MessageDTO(
+        @JsonProperty(value = "content", required = true) String message,
+        @JsonProperty(value = "fromUsername", required = true) String fromUsername
+    ) {
+        this.message = message;
+        this.fromUsername = fromUsername;
     }
 
-    public String toJson() {
-        return String.format("{\"message\":\"%s\",\"fromId\":%d,\"roomId\":%d}", content, fromId, roomId);
-    }
-
-    public String getContent() { return content; }
-    public long getFromId() { return fromId; }
-    public long getRoomId() { return roomId; }
+    public String getMessage() { return message; }
+    public String getFromUsername() { return fromUsername; }
 }

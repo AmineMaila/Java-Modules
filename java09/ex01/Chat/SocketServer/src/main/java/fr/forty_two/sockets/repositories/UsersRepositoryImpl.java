@@ -32,12 +32,13 @@ public class UsersRepositoryImpl implements UsersRepository {
             );
         }
     }
+    private final UserMapper ROW_MAPPER = new UserMapper();
 
     private final String SELECT_ALL = "SELECT * FROM users";
     private final String SELECT_USERNAME = "SELECT * FROM users WHERE username = ?";
     private final String SELECT_ID = "SELECT * FROM users WHERE id = ?";
     private final String INSERT = "INSERT INTO users(username, hashed_password) VALUES(?, ?)";
-    private final String UPDATE = "UPDATE users SET username = ?, hashed_password = ?";
+    private final String UPDATE = "UPDATE users SET username = ?, hashed_password = ? WHERE id = ?";
     private final String DELETE = "DELETE FROM users WHERE id = ?";
 
     public UsersRepositoryImpl(DataSource engine) {
@@ -46,13 +47,13 @@ public class UsersRepositoryImpl implements UsersRepository {
 
     @Override
     public List<User> findAll() {
-        return jdbcTemplate.query(SELECT_ALL, new UserMapper());
+        return jdbcTemplate.query(SELECT_ALL, ROW_MAPPER);
     }
 
     @Override
     public Optional<User> findByUsername(String username) {
         try {
-            return Optional.of(jdbcTemplate.queryForObject(SELECT_USERNAME, new UserMapper(), username));
+            return Optional.ofNullable(jdbcTemplate.queryForObject(SELECT_USERNAME, ROW_MAPPER, username));
         } catch (IncorrectResultSizeDataAccessException e) {
             return Optional.empty();
         }
@@ -61,9 +62,9 @@ public class UsersRepositoryImpl implements UsersRepository {
     @Override
     public Optional<User> findById(Long id) {
         try {
-            return Optional.of(jdbcTemplate.queryForObject(
+            return Optional.ofNullable(jdbcTemplate.queryForObject(
                 SELECT_ID,
-                new UserMapper(),
+                ROW_MAPPER,
                 id
             ));
         } catch (EmptyResultDataAccessException e) {
@@ -82,7 +83,7 @@ public class UsersRepositoryImpl implements UsersRepository {
             return ps;
         }, keyHolder);
 
-        entity.setId((Long)keyHolder.getKey());
+        entity.setId(keyHolder.getKey().longValue());
     }
 
     @Override
@@ -90,7 +91,8 @@ public class UsersRepositoryImpl implements UsersRepository {
         jdbcTemplate.update(
             UPDATE,
             entity.getUsername(),
-            entity.getHashedPassword()
+            entity.getHashedPassword(),
+            entity.getId()
         );
     }
 

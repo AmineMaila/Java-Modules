@@ -7,6 +7,9 @@ import fr.forty_two.sockets.models.Chatroom;
 
 public interface RoomsService {
     Chatroom createRoom(String name);
-    public List<Chatroom> getAllRooms();
-    public RoomInstance addUser(long roomId, PrintWriter writer);
+    List<Chatroom> getAllRooms();
+    void broadcast(Long roomId, String messageJSON);
+    RoomInstance addUser(Long roomId, PrintWriter writer);
+    void removeUser(Long roomId, PrintWriter writer);
+
 }
