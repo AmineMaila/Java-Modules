@@ -5,13 +5,7 @@ public class Program {
         long storage = 0;
         int weekCount = 0;
         Scanner sc = new Scanner(System.in);
-        while (sc.hasNextLine()) {
-            if (weekCount > 18) {
-                System.err.println("IllegalArgument");
-                sc.close();
-                System.exit(-1);
-            }
-
+        while (sc.hasNextLine() && weekCount < 18) {
             String line = sc.nextLine();
             if (line.equals("42")) {
                 break;
@@ -36,9 +30,7 @@ public class Program {
                     sc.close();
                     System.exit(-1);
                 }
-                if (grade < min) {
-                    min = grade;
-                }
+                min = grade < min ? grade : min;
             }
             sc.nextLine();
             storage = storage * 10 + min;

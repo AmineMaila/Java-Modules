@@ -12,14 +12,14 @@ public class Program {
     }
 
     private static boolean isPrime(long num) {
-        if (num <= 1 || num % 2 == 0) {
-            return false;
-        }
-        
         if (num == 2) {
             return true;
         }
 
+        if (num <= 1 || num % 2 == 0) {
+            return false;
+        }
+        
         int div = 3;
         long limit = num / 2;
         while (div < limit) {
