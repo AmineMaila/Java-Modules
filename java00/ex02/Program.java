@@ -4,11 +4,11 @@ public class Program {
     private static long sumOfDigit(long num) {
         long res = 0;
 
-        while (num > 0) {
+        while (num != 0) {
             res += num % 10;
             num /= 10;
         }
-        return res;
+        return res < 0 ? -res : res;
     }
 
     private static boolean isPrime(long num) {
@@ -38,11 +38,13 @@ public class Program {
         while (true) {
             if (!sc.hasNextLong()) {
                 System.err.println("IllegalArgument");
+                sc.close();
                 System.exit(-1);
             }
             long query = sc.nextLong();
             if (query <= 1) {
                 System.err.println("IllegalArgument");
+                sc.close();
                 System.exit(-1);
             }
             if (query == 42) {

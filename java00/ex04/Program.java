@@ -30,12 +30,12 @@ public class Program {
     public static void printGraph(int[] frequency, char[] topTen) {
         float mult = (float)frequency[topTen[0]] / 10;
         
-        for (int i = 0; i < 11; i++) {
-            for (int j = 0; j < 10; j++) {
-                int height = (int)(frequency[topTen[j]] / mult);
-                if (height == 10 - i) {
-                    System.out.printf("%3d", frequency[topTen[j]]);
-                } else if (height >= 10 - i) {
+        for (int lineIndex = 0; lineIndex < 11; lineIndex++) {
+            for (int bar = 0; bar < 10; bar++) {
+                int height = (int)(frequency[topTen[bar]] / mult);
+                if (height == 10 - lineIndex) {
+                    System.out.printf("%3d", frequency[topTen[bar]]);
+                } else if (height > 10 - lineIndex) {
                     System.out.printf("%3c", '#');
                 }
             }

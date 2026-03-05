@@ -1,6 +1,15 @@
 import java.util.Scanner;
 
 public class Program {
+
+    public static int sqrt(int x) {
+        long i = 1;
+        while (i * i <= x) {
+            i++;
+        }
+        return (int)(i - 1);
+    }
+
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         if (!sc.hasNextInt()) {
@@ -30,9 +39,9 @@ public class Program {
 
         int div = 3;
         int steps = 1;
-        int limit = num / 2;
+        int limit = sqrt(num);
     
-        while (div < limit) {
+        while (div <= limit) {
             if (num % div == 0) {
                 System.out.println("false " + steps);
                 sc.close();

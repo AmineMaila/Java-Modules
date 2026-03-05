@@ -4,10 +4,10 @@ public class Program {
         int number = 479598;
         int res = 0;
 
-        while (number > 0) {
+        while (number != 0) {
             res += number % 10;
             number /= 10;
         }
-        System.out.println(res);
+        System.out.println(res < 0 ? -res : res);
     }
 }

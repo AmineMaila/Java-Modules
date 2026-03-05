@@ -13,19 +13,10 @@ public class Program {
     // the first array represent the students and the second is month days and third is hour of attendence
     private static final int[][][] attendence = new int[INPUT_LIMIT][DAYS_IN_MONTH][HOURS_IN_DAY];
 
-    public static boolean isClassOnDay(boolean[][] schedule, int dayOfMonth) {
-        for (int hour = 0; hour < schedule[dayOfMonth % WEEK.length].length; hour++) {
-            if (schedule[dayOfMonth % WEEK.length][hour]) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public static int parseDay(char[] day) {
-        for (int i = 0; i < WEEK.length; i++) {
+        for (int i = 0; i < DAYS_IN_WEEK; i++) {
             char[] weekDayChars = WEEK[i].toCharArray();
-            if (weekDayChars[0] == day[0] && weekDayChars[1] == weekDayChars[1]) {
+            if (weekDayChars[0] == day[0] && weekDayChars[1] == day[1]) {
                 return i;
             }
         }
@@ -36,6 +27,7 @@ public class Program {
         if (s1.length != s2end - s2start) {
             return -1;
         }
+
         for (int i = 0; i < s1.length; i++) {
             if (s1[i] != s2[s2start + i]) {
                 return -1;
@@ -48,9 +40,9 @@ public class Program {
         System.out.printf("%10s", "");
         for (int dayOfMonth = 1; dayOfMonth <= DAYS_IN_MONTH; dayOfMonth++) {
             for (int hour = 0; hour < HOURS_IN_DAY; hour++) {
-                int dayOfWeek = dayOfMonth % WEEK.length;
+                int dayOfWeek = dayOfMonth % DAYS_IN_WEEK;
                 if (schedule[dayOfWeek][hour]) {
-                    String date = hour + ":00 " + WEEK[dayOfMonth % WEEK.length] + " " + dayOfMonth;
+                    String date = (hour + 1) + ":00 " + WEEK[dayOfMonth % DAYS_IN_WEEK] + " " + dayOfMonth;
                     System.out.printf("%10s|", date);
                 }
             }
@@ -67,14 +59,15 @@ public class Program {
             students[studentSize++] = student;
         }
     }
+
     public static void parseSchedule(Scanner reader) {
         while (reader.hasNextLine()) {
-            String clazz = reader.nextLine();
-            if (clazz.equals("."))  {
+            String studyClass = reader.nextLine();
+            if (studyClass.equals("."))  {
                 return;
             }
-            char[] chars = clazz.toCharArray();
-            int hour = chars[0] - '0';
+            char[] chars = studyClass.toCharArray();
+            int hour = (chars[0] - '0') - 1;
             int day = parseDay(new char[]{chars[2], chars[3]});
 
             schedule[day][hour] = true;
@@ -100,17 +93,24 @@ public class Program {
                     studentIndex = i;
                 }
             }
-            idx++;
 
-            int hour = inputCharArr[idx] - '0';
-            idx+=2;
+            while(inputCharArr[idx] == ' ') {
+                idx++;
+            }
+
+            int hour = inputCharArr[idx++] - '0';
+
+            while(inputCharArr[idx] == ' ') {
+                idx++;
+            }
+
             int monthDay = 0;
             while (inputCharArr[idx] != ' ') {
                 monthDay = monthDay * 10 + (inputCharArr[idx] - '0');
                 idx++;
             }
-            idx++;
-            attendence[studentIndex][monthDay - 1][hour] = matches(new char[]{'H', 'E', 'R', 'E'}, inputCharArr, idx, inputCharArr.length);
+            idx+=1;
+            attendence[studentIndex][monthDay - 1][hour - 1] = matches(new char[]{'H', 'E', 'R', 'E'}, inputCharArr, idx, inputCharArr.length);
         }
     }
 
@@ -118,11 +118,8 @@ public class Program {
         for (int studentIndex = 0; studentIndex < studentSize; studentIndex++) {
             System.out.printf("%10s", students[studentIndex]);
             for (int dayOfMonth = 1; dayOfMonth <= DAYS_IN_MONTH; dayOfMonth++) {
-                if (!isClassOnDay(schedule, dayOfMonth)) {
-                    continue;
-                }
                 for (int hour = 0; hour < HOURS_IN_DAY; hour++) {
-                    if (!schedule[dayOfMonth % WEEK.length][hour]) {
+                    if (!schedule[dayOfMonth % DAYS_IN_WEEK][hour]) {
                         continue;
                     }
                     if (attendence[studentIndex][dayOfMonth - 1][hour] != 0) {
